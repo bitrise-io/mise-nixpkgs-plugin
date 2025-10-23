@@ -43,12 +43,16 @@ workflows:
 
             # Reload daemon after nix.conf file changes
             sudo launchctl kickstart -k system/org.nixos.nix-daemon || true
-
-            echo ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" >> ~/.bashrc
     - script@1:
         title: Basic plugin test
         inputs:
-        - content: mise settings experimental=true && mise run test
+        - content: |-
+            set -exo pipefail
+            
+            mise settings experimental=true
+            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+
+            mise run test
     - deploy-to-bitrise-io@2: {}
 meta:
   bitrise.io:
