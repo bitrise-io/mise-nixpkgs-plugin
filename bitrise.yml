@@ -48,7 +48,7 @@ workflows:
     - script@1:
         title: Basic plugin test
         inputs:
-        - content: mise task run
+        - content: mise run test
     - deploy-to-bitrise-io@2: {}
 meta:
   bitrise.io:
