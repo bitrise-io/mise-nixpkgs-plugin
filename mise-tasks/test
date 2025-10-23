@@ -2,39 +2,37 @@
 #MISE description="Run backend plugin tests - test plugin linking and basic functionality"
 set -euo pipefail
 
-# Link the plugin for testing
-mise plugin link --force nixpkgs .
+run_test() {
+    local test_name="$1"
+    local cmd="$2"
 
-# Clear cache to ensure fresh testing
+    echo "Testing ${test_name}..."
+    if output=$(eval "$cmd" 2>&1); then
+        echo "✓ ${test_name} works"
+        return 0
+    else
+        echo "✗ ${test_name} failed"
+        echo "Command: $cmd"
+        echo "Output:"
+        echo "$output"
+        return 1
+    fi
+}
+
+mise plugin link --force nixpkgs .
 mise cache clear
 
-# Test that the plugin can list tools (this should work even if no tools are available)
 echo "Testing plugin linking and basic functionality..."
 
-# Try to list available versions for a test tool
-# Note: This will likely fail until you implement the backend methods
 TEST_TOOL="ruby"
 
-echo "Testing version listing for ${TEST_TOOL}..."
-if mise ls-remote nixpkgs:${TEST_TOOL} 2>/dev/null; then
-    echo "✓ Version listing works"
-else
-    echo "⚠ Version listing failed - implement backend_list_versions.lua for your backend"
-fi
+run_test "version listing for ${TEST_TOOL}" \
+    "mise ls-remote nixpkgs:${TEST_TOOL}" || exit 1
 
-# Test installation if versions are available
-echo "Testing installation..."
-if mise install nixpkgs:${TEST_TOOL}@latest 2>/dev/null; then
-    echo "✓ Installation works"
-    
-    # Test that the tool can be executed
-    if mise exec nixpkgs:${TEST_TOOL}@latest -- ${TEST_TOOL} --version 2>/dev/null; then
-        echo "✓ Tool execution works"
-    else
-        echo "⚠ Tool execution failed - check backend_exec_env.lua implementation"
-    fi
-else
-    echo "⚠ Installation failed - implement backend_install.lua for your backend"
-fi
+run_test "installation of ${TEST_TOOL}" \
+    "mise install nixpkgs:${TEST_TOOL}@latest" || exit 1
+
+run_test "tool execution for ${TEST_TOOL}" \
+    "mise exec nixpkgs:${TEST_TOOL}@latest -- ${TEST_TOOL} --version" || exit 1
 
 echo "✓ Basic plugin structure tests completed"

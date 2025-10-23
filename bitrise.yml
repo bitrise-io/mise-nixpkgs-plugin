@@ -1,0 +1,50 @@
+---
+format_version: '23'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+
+# Trigger toolsetup just to have mise in $PATH
+tools:
+  nodejs: 22:installed
+tool_config:
+  provider: mise
+
+workflows:
+  primary:
+    triggers:
+        push:
+        - branch: main
+        pull_request:
+        - source_branch: "*"
+    steps:
+    - git-clone@8: {}
+    - script@1:
+        title: Install Nix
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -eo pipefail
+
+            export NIX_INSTALLER_NO_CONFIRM=true
+            export NIX_INSTALLER_ENABLE_FLAKES=true
+            curl -sSf -L https://install.lix.systems/lix | sh -s -- install
+
+            echo "access-tokens = github.com=$NIX_GITHUB_TOKEN" | sudo tee -a /etc/nix/nix.conf
+
+            # Reload daemon after nix.conf file changes
+            sudo launchctl kickstart -k system/org.nixos.nix-daemon || true
+
+            echo ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" >> ~/.profile
+    - script@1:
+        title: Lint + format
+        inputs:
+        - content: mise run ci
+    - script@1:
+        title: Basic plugin test
+        inputs:
+        - content: mise task run
+    - deploy-to-bitrise-io@2: {}
+meta:
+  bitrise.io:
+    stack: ubuntu-noble-24.04-bitrise-2025-android
+    machine_type_id: g2.linux.large
