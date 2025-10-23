@@ -48,7 +48,7 @@ workflows:
     - script@1:
         title: Basic plugin test
         inputs:
-        - content: mise run test
+        - content: mise settings experimental=true && mise run test
     - deploy-to-bitrise-io@2: {}
 meta:
   bitrise.io:
