@@ -18,86 +18,39 @@ function PLUGIN:BackendInstall(ctx)
         error("Install path cannot be empty")
     end
 
-    -- Create installation directory
+    -- nixpkgs mapping validation
+    local nix = require("nix")
+    local nixpkgs_mapping = require("nixpkgs_mapping")
+    local mapping = nixpkgs_mapping.parse_mapping_file()
+    local nix_system_string = nix.current_system()
+    if
+        not mapping.packages
+        or not mapping.packages[tool]
+        or not mapping.packages[tool][version]
+        or not mapping.packages[tool][version][nix_system_string]
+    then
+        error("No nixpkgs mapping found for " .. tool .. "@" .. version .. " on " .. nix_system_string)
+    end
+
     local cmd = require("cmd")
+
+    -- Create installation directory
     cmd.exec("mkdir -p " .. install_path)
+    -- Create state dir (Nix store is read-only, the state dir is for things like Ruby gems, Cargo crates, etc.)
+    cmd.exec("mkdir -p " .. install_path .. "/state")
 
-    -- Example implementations (choose/modify based on your backend):
-
-    -- Example 1: Package manager installation (like npm, pip)
-    local install_cmd = "<BACKEND> install " .. tool .. "@" .. version .. " --target " .. install_path
-    local result = cmd.exec(install_cmd)
-
-    if result:match("error") or result:match("failed") then
-        error("Failed to install " .. tool .. "@" .. version .. ": " .. result)
+    -- Nix invocation
+    local nix_cmd_start = os.time()
+    local store_object = mapping.packages[tool][version][nix_system_string]
+    -- Nix details:
+    -- --add-root: registers a GC root for the store path. This prevents the store path from being GC'd when the user runs nix-collect-garbage.
+    local nix_cmd = "nix-store --realise " .. store_object .. " --add-root " .. install_path .. "/result"
+    local output = cmd.exec(nix_cmd)
+    print(output)
+    if output:match("error") or output:match("failed") then
+        error("Failed to install " .. tool .. "@" .. version .. ": " .. output)
     end
-
-    -- Example 2: Download and extract from URL
-    --[[
-    local http = require("http")
-    local file = require("file")
-
-    -- Construct download URL (adjust based on your backend's URL pattern)
-    local platform = RUNTIME.osType:lower()
-    local arch = RUNTIME.archType
-    local download_url = "https://releases.<BACKEND>.org/" .. tool .. "/" .. version .. "/" .. tool .. "-" .. platform .. "-" .. arch .. ".tar.gz"
-
-    -- Download the tool
-    local temp_file = install_path .. "/" .. tool .. ".tar.gz"
-    local resp, err = http.download({
-        url = download_url,
-        output = temp_file
-    })
-
-    if err then
-        error("Failed to download " .. tool .. "@" .. version .. ": " .. err)
-    end
-
-    -- Extract the archive
-    cmd.exec("cd " .. install_path .. " && tar -xzf " .. temp_file)
-    cmd.exec("rm " .. temp_file)
-
-    -- Set executable permissions
-    cmd.exec("chmod +x " .. install_path .. "/bin/" .. tool)
-    --]]
-
-    -- Example 3: Build from source
-    --[[
-    local git_url = "https://github.com/owner/" .. tool .. ".git"
-
-    -- Clone the repository
-    cmd.exec("git clone " .. git_url .. " " .. install_path .. "/src")
-    cmd.exec("cd " .. install_path .. "/src && git checkout " .. version)
-
-    -- Build the tool (adjust based on build system)
-    local build_result = cmd.exec("cd " .. install_path .. "/src && make install PREFIX=" .. install_path)
-
-    if build_result:match("error") then
-        error("Failed to build " .. tool .. "@" .. version)
-    end
-
-    -- Clean up source
-    cmd.exec("rm -rf " .. install_path .. "/src")
-    --]]
-
-    -- Platform-specific installation logic
-    --[[
-    if RUNTIME.osType == "Darwin" then
-        -- macOS-specific installation
-        local macos_cmd = "<BACKEND> install-macos " .. tool .. "@" .. version .. " " .. install_path
-        cmd.exec(macos_cmd)
-    elseif RUNTIME.osType == "Linux" then
-        -- Linux-specific installation
-        local linux_cmd = "<BACKEND> install-linux " .. tool .. "@" .. version .. " " .. install_path
-        cmd.exec(linux_cmd)
-    elseif RUNTIME.osType == "Windows" then
-        -- Windows-specific installation
-        local windows_cmd = "<BACKEND> install-windows " .. tool .. "@" .. version .. " " .. install_path
-        cmd.exec(windows_cmd)
-    else
-        error("Unsupported platform: " .. RUNTIME.osType)
-    end
-    --]]
+    print(string.format("Nix build took %ds", os.time() - nix_cmd_start))
 
     return {}
 end

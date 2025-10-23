@@ -1,0 +1,16 @@
+{
+  "packages": {
+    "ruby": {
+      "3.3.9": {
+        "aarch64-darwin": "/nix/store/1bkgcsf7qfk2pbi3a1pnd8q1vlz2zk3q-ruby-3.3.9",
+        "x86_64-linux": "/nix/store/..."
+      }
+    },
+    "python": {
+      "3.13.8": {
+        "aarch64-darwin": "/nix/store/s7ik6dazn4nd2jdg9l36qf5q0z18sjyk-python3-3.13.8",
+        "x86_64-linux": "/nix/store/..."
+      }
+    }
+  }
+}

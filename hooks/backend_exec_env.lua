@@ -7,35 +7,23 @@ function PLUGIN:BackendExecEnv(ctx)
     local tool = ctx.tool
     local version = ctx.version
 
-    -- Basic PATH setup (most common case)
     local file = require("file")
-    local bin_path = file.join_path(install_path, "bin")
+    local bin_path = file.join_path(install_path, "result", "bin")
 
     local env_vars = {
-        -- Add tool's bin directory to PATH
         { key = "PATH", value = bin_path },
     }
 
-    -- Example: Tool-specific environment variables
-    --[[
-    -- Add tool-specific home directory
-    table.insert(env_vars, {
-        key = tool:upper() .. "_HOME",
-        value = install_path
-    })
+    -- TODO: reimplement backend-specific env vars based on tool type (Python, Go, etc.)
 
-    -- Add version environment variable
-    table.insert(env_vars, {
-        key = tool:upper() .. "_VERSION",
-        value = version
-    })
-
-    -- Add configuration directory
-    table.insert(env_vars, {
-        key = tool:upper() .. "_CONFIG",
-        value = file.join_path(install_path, "config")
-    })
-    --]]
+    if tool == "ruby" then
+        -- Nix store is read-only, gems should be installed to the state dir
+        table.insert(env_vars, { key = "GEM_HOME", value = file.join_path(install_path, "state/gems") })
+        table.insert(env_vars, { key = "PATH", value = file.join_path(install_path, "state/gems/bin") })
+    elseif tool == "python" then
+        -- TODO: pkgs.python3 doesn't contain `pip`, and pkgs.python3Packages.pip doesn't expose the `python` bin
+        -- TODO: https://github.com/cashapp/hermit-packages/blob/master/python3.hcl#L6
+    end
 
     -- Example: Backend-specific paths (like node_modules for npm)
     --[[
@@ -72,11 +60,8 @@ function PLUGIN:BackendExecEnv(ctx)
     table.insert(env_vars, {key = "CPLUS_INCLUDE_PATH", value = include_path})
     --]]
 
-    -- Example: Manual pages path
-    --[[
     local man_path = file.join_path(install_path, "share", "man")
-    table.insert(env_vars, {key = "MANPATH", value = man_path})
-    --]]
+    table.insert(env_vars, { key = "MANPATH", value = man_path })
 
     return {
         env_vars = env_vars,
