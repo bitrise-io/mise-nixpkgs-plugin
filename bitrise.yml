@@ -19,7 +19,17 @@ workflows:
     steps:
     - git-clone@8: {}
     - script@1:
+        title: Upgrade mise
+        # TODO: temporary until we ship a more recent mise version with full Lua support
+        inputs:
+        - content: mise self-update
+    - script@1:
+        title: Lint
+        inputs:
+        - content: mise run lint
+    - script@1:
         title: Install Nix
+        # TODO: temporary until stacks have Nix preinstalled
         inputs:
         - content: |-
             #!/usr/bin/env bash
@@ -35,10 +45,6 @@ workflows:
             sudo launchctl kickstart -k system/org.nixos.nix-daemon || true
 
             echo ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" >> ~/.profile
-    - script@1:
-        title: Lint + format
-        inputs:
-        - content: mise run ci
     - script@1:
         title: Basic plugin test
         inputs:
