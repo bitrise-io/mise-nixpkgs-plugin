@@ -44,7 +44,7 @@ workflows:
             # Reload daemon after nix.conf file changes
             sudo launchctl kickstart -k system/org.nixos.nix-daemon || true
 
-            echo ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" >> ~/.profile
+            echo ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" >> ~/.bashrc
     - script@1:
         title: Basic plugin test
         inputs:
