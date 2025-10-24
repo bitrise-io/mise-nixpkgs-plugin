@@ -48,7 +48,7 @@ workflows:
         inputs:
         - content: |-
             set -exo pipefail
-            
+
             mise settings experimental=true
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 
@@ -56,5 +56,5 @@ workflows:
     - deploy-to-bitrise-io@2: {}
 meta:
   bitrise.io:
-    stack: ubuntu-noble-24.04-bitrise-2025-android
-    machine_type_id: g2.linux.large
+    stack: osx-xcode-26.1.x-edge
+    machine_type_id: g2.mac.large
