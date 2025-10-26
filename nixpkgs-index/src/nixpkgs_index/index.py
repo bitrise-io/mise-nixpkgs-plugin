@@ -7,6 +7,7 @@ from collections import OrderedDict
 from dataclasses import dataclass, asdict, field
 from typing import Dict, Optional
 from datetime import datetime
+from packaging import version
 
 logger = logging.getLogger(__name__)
 
@@ -70,10 +71,10 @@ class Index:
         for pkg_name in sorted(self.pkgs.keys()):
             pkg_index = self.pkgs[pkg_name]
             data["pkgs"][pkg_name] = OrderedDict()
-            sorted_versions = sorted(pkg_index.versions.keys(), reverse=True)
-            for version in sorted_versions:
-                entry = pkg_index.versions[version]
-                data["pkgs"][pkg_name][version] = asdict(entry)
+            sorted_versions = sorted(pkg_index.versions.keys(), key=version.parse, reverse=True)
+            for ver in sorted_versions:
+                entry = pkg_index.versions[ver]
+                data["pkgs"][pkg_name][ver] = asdict(entry)
                 total_versions += 1
 
         path.parent.mkdir(parents=True, exist_ok=True)

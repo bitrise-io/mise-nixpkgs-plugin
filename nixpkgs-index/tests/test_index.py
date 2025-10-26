@@ -201,3 +201,33 @@ class TestIndex:
             assert apple_v1_2_pos < apple_v1_1_pos
         finally:
             output_path.unlink()
+
+    def test_semantic_version_sorting_with_double_digit_minor(self):
+        """Test that versions like 24.10.0 sort correctly before 24.5.0 (not after)."""
+        index = Index()
+
+        # Add versions in non-sorted order with double-digit minor versions
+        index.update_version("node", "24.5.0", "c1", "2025-08-25T22:56:36+00:00")
+        index.update_version("node", "24.10.0", "c2", "2025-10-23T22:54:49+00:00")
+        index.update_version("node", "24.9.0", "c3", "2025-10-09T22:52:58+00:00")
+        index.update_version("node", "22.20.0", "c4", "2025-10-23T22:54:49+00:00")
+        index.update_version("node", "22.19.0", "c5", "2025-10-21T23:04:44+00:00")
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
+            output_path = Path(f.name)
+
+        try:
+            index.save(output_path)
+            yaml_content = output_path.read_text()
+
+            # Find positions of version strings
+            v24_10_pos = yaml_content.find("24.10.0")
+            v24_9_pos = yaml_content.find("24.9.0")
+            v24_5_pos = yaml_content.find("24.5.0")
+            v22_20_pos = yaml_content.find("22.20.0")
+            v22_19_pos = yaml_content.find("22.19.0")
+
+            # Versions should appear in descending semantic order
+            assert v24_10_pos < v24_9_pos < v24_5_pos < v22_20_pos < v22_19_pos
+        finally:
+            output_path.unlink()
