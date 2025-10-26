@@ -1,4 +1,9 @@
 {
+    "files.exclude": {
+        // Huge
+        "nixpkgs-index/.nixpkgs-checkout/pkgs/**": true,
+        "nixpkgs-index/.nixpkgs-checkout-test/": true,
+    },
     "Lua.diagnostics.globals": [
         "RUNTIME"
     ]

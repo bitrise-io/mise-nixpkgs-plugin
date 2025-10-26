@@ -1,0 +1,11 @@
+.nixpkgs-checkout/
+index.yml
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+dist/
+build/
+
+.env

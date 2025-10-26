@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//private/tmp/test-repo/**)",
+      "Bash(python:*)",
+      "Bash(uv run:*)",
+      "Bash(cat:*)",
+      "Bash(uv pip install:*)",
+      "WebFetch(domain:docs.github.com)",
+      "Bash(uv sync:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
