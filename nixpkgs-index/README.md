@@ -180,6 +180,13 @@ The index keeps only one entry per version, updated to the newest commit timesta
 uv run pytest
 ```
 
+### TODO and Future Work
+
+- [ ] Split the index file per package for easier diffs
+- [ ] Evaluate store objects and store them per-system in the index
+- [ ] Once the above is done, optimize the commit update by comparing the old vs. new store objects and only update the commit hash if the store object changed (if not, nothing relevant changed for that package/version)
+
+
 ## Troubleshooting
 
 ### "Failed to evaluate attribute"
