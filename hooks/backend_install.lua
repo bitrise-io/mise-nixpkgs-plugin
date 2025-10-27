@@ -43,7 +43,10 @@ function PLUGIN:BackendInstall(ctx)
     local nix_cmd_start = os.time()
     local store_object = mapping.packages[tool][version][nix_system_string]
     -- Nix details:
-    -- --add-root: registers a GC root for the store path. This prevents the store path from being GC'd when the user runs nix-collect-garbage.
+    -- --add-root: registers a GC root for the store path.
+    --             This prevents the store path from being GC'd when the user runs nix-collect-garbage.
+    -- TODO: configurable behavior when store object is not available in binary cache: fail or build from source
+    -- We could use os.getenv() here.
     local nix_cmd = "nix-store --realise " .. store_object .. " --add-root " .. install_path .. "/result"
     local output = cmd.exec(nix_cmd)
     print(output)
