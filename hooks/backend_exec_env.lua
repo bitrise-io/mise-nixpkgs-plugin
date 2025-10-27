@@ -19,6 +19,7 @@ function PLUGIN:BackendExecEnv(ctx)
     if tool == "ruby" then
         -- Nix store is read-only, gems should be installed to the state dir
         table.insert(env_vars, { key = "GEM_HOME", value = file.join_path(install_path, "state/gems") })
+        table.insert(env_vars, { key = "GEM_PATH", value = file.join_path(install_path, "state/gems/gems") })
         table.insert(env_vars, { key = "PATH", value = file.join_path(install_path, "state/gems/bin") })
     elseif tool == "python" then
         -- TODO: pkgs.python3 doesn't contain `pip`, and pkgs.python3Packages.pip doesn't expose the `python` bin
