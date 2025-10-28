@@ -1,5 +1,14 @@
 {
+    "files.exclude": {
+        // Huge
+        "nixpkgs-index/.nixpkgs-checkout/pkgs/**": true,
+    },
     "Lua.diagnostics.globals": [
         "RUNTIME"
-    ]
+    ],
+    "python.testing.pytestArgs": [
+        "nixpkgs-index/tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
 }
