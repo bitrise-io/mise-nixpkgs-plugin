@@ -8,7 +8,8 @@
       "Bash(uv pip install:*)",
       "WebFetch(domain:docs.github.com)",
       "Bash(uv sync:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(nix eval:*)"
     ],
     "deny": [],
     "ask": []

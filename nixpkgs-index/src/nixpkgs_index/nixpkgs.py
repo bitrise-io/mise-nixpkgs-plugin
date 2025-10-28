@@ -106,7 +106,11 @@ class NixpkgsRepo:
                 logger.debug(f"Eval {attribute}.version: {version}")
                 return version
             else:
-                logger.warning(f"Nix eval failed for {attribute}: {result.stderr.strip()}")
+                stderr = result.stderr.strip()
+                if self._is_known_eval_error(stderr):
+                    logger.debug(f"Known error for {attribute}, skipping...")
+                else:
+                    logger.warning(f"Nix eval failed for {attribute}: {stderr}")
                 return None
         except subprocess.TimeoutExpired:
             logger.debug(f"Evaluation timeout: {attribute}")
@@ -133,7 +137,11 @@ class NixpkgsRepo:
                 logger.debug(f"Eval {attribute} ({system}): {store_path}")
                 return store_path
             else:
-                logger.warning(f"Nix eval failed for {attribute} on {system}: {result.stderr.strip()}")
+                stderr = result.stderr.strip()
+                if self._is_known_eval_error(stderr):
+                    logger.debug(f"Known error for {attribute} on {system}, skipping...")
+                else:
+                    logger.warning(f"Nix eval failed for {attribute} on {system}: {stderr}")
                 return None
         except subprocess.TimeoutExpired:
             logger.debug(f"Evaluation timeout: {attribute} on {system}")
@@ -141,4 +149,13 @@ class NixpkgsRepo:
         except Exception as e:
             logger.debug(f"Evaluation error for {attribute} on {system}: {e}")
             return None
+
+    def _is_known_eval_error(self, stderr: str) -> bool:
+        known_error_patterns = [
+            "has been removed",
+            "end-of-life",
+            "does not provide attribute",
+            " not found inside path "
+        ]
+        return any(pattern in stderr for pattern in known_error_patterns)
 
