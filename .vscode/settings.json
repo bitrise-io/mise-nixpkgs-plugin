@@ -2,9 +2,15 @@
     "files.exclude": {
         // Huge
         "nixpkgs-index/.nixpkgs-checkout/pkgs/**": true,
-        "nixpkgs-index/.nixpkgs-checkout-test/": true,
     },
     "Lua.diagnostics.globals": [
         "RUNTIME"
-    ]
+    ],
+    "python.testing.pytestArgs": [
+        "nixpkgs-index/tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": []
 }
