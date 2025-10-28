@@ -5,11 +5,33 @@ import logging
 from pathlib import Path
 from collections import OrderedDict
 from dataclasses import dataclass, asdict, field
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, TypedDict, NotRequired, Required, cast
 from datetime import datetime
 from packaging import version
 
 logger = logging.getLogger(__name__)
+
+
+class VersionEntryDict(TypedDict, total=False):
+    nixpkgs_commit: Required[str]
+    commit_timestamp: Required[str]
+    store_paths: Dict[str, str]
+
+
+class IndexDict(TypedDict, total=False):
+    pkgs: Dict[str, Dict[str, VersionEntryDict]]
+
+
+@dataclass
+class ParsedVersionEntry:
+    nixpkgs_commit: str
+    commit_timestamp: str
+    store_paths: Optional[Dict[str, str]] = None
+
+
+@dataclass
+class ParsedIndexYAML:
+    pkgs: Dict[str, Dict[str, ParsedVersionEntry]]
 
 
 def _represent_ordereddict(dumper, data):
@@ -47,17 +69,33 @@ class Index:
             return cls()
 
         with open(path) as f:
-            data = yaml.safe_load(f) or {}
+            raw_data = yaml.safe_load(f) or {}
 
-        index = cls()
-        total_versions = 0
-        for pkg_name, pkg_data in data.get("pkgs", {}).items():
-            pkg_index = PackageIndex()
-            for version, version_data in pkg_data.items():
-                pkg_index.versions[version] = VersionEntry(
+        data = cast(IndexDict, raw_data)
+
+        pkgs_data = data.get("pkgs") or {}
+        parsed_pkgs: Dict[str, Dict[str, ParsedVersionEntry]] = {}
+        for pkg_name, pkg_data in pkgs_data.items():
+            parsed_versions: Dict[str, ParsedVersionEntry] = {}
+            for ver, version_data in pkg_data.items():
+                parsed_versions[ver] = ParsedVersionEntry(
                     nixpkgs_commit=version_data["nixpkgs_commit"],
                     commit_timestamp=version_data["commit_timestamp"],
                     store_paths=version_data.get("store_paths")
+                )
+            parsed_pkgs[pkg_name] = parsed_versions
+
+        parsed = ParsedIndexYAML(pkgs=parsed_pkgs)
+
+        index = cls()
+        total_versions = 0
+        for pkg_name, parsed_versions in parsed.pkgs.items():
+            pkg_index = PackageIndex()
+            for ver, parsed_entry in parsed_versions.items():
+                pkg_index.versions[ver] = VersionEntry(
+                    nixpkgs_commit=parsed_entry.nixpkgs_commit,
+                    commit_timestamp=parsed_entry.commit_timestamp,
+                    store_paths=parsed_entry.store_paths
                 )
                 total_versions += 1
             index.pkgs[pkg_name] = pkg_index

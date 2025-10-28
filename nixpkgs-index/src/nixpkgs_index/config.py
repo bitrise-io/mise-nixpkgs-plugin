@@ -4,9 +4,31 @@ import yaml
 import logging
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, TypedDict, NotRequired, Required, Any, Optional, cast
 
 logger = logging.getLogger(__name__)
+
+
+class PackageConfigDict(TypedDict, total=False):
+    nixpkgs_attributes: List[str]
+
+
+class EvalConfigDict(TypedDict, total=False):
+    record_store_paths: bool
+    systems: List[str]
+
+
+class ConfigDict(TypedDict, total=False):
+    branch: Required[str]
+    pkgs: Required[Dict[str, PackageConfigDict]]
+    eval: EvalConfigDict
+
+
+@dataclass
+class ParsedConfigYAML:
+    branch: str
+    pkgs: Dict[str, Any]
+    eval: Optional[EvalConfigDict] = None
 
 
 @dataclass
@@ -34,24 +56,32 @@ class Config:
         """Load configuration from a YAML file."""
         logger.debug(f"Opening config file: {path}")
         with open(path) as f:
-            data = yaml.safe_load(f)
+            raw_data = yaml.safe_load(f) or {}
 
-        if not data:
-            logger.warning(f"Config file is empty or invalid YAML")
-            data = {}
+        data = cast(ConfigDict, raw_data)
 
-        branch = data.get("branch", "nixpkgs-unstable")
-        logger.info(f"Branch: {branch}")
+        if "branch" not in data:
+            raise ValueError("Config file must specify 'branch'")
+        if "pkgs" not in data:
+            raise ValueError("Config file must specify 'pkgs'")
+
+        parsed = ParsedConfigYAML(
+            branch=data["branch"],
+            pkgs=data["pkgs"],
+            eval=data.get("eval")
+        )
+
+        logger.info(f"Branch: {parsed.branch}")
 
         pkgs = {}
-        for pkg_name, pkg_data in data.get("pkgs", {}).items():
+        for pkg_name, pkg_data in parsed.pkgs.items():
             attributes = pkg_data.get("nixpkgs_attributes", [])
             logger.debug(f"Package '{pkg_name}': {len(attributes)} attributes")
             pkgs[pkg_name] = PackageConfig(nixpkgs_attributes=attributes)
 
         logger.info(f"Loaded config with {len(pkgs)} packages")
 
-        eval_data = data.get("eval", {})
+        eval_data: EvalConfigDict = parsed.eval or {}
         record_store_paths = eval_data.get("record_store_paths", False)
         systems = eval_data.get("systems", [])
         eval_config = EvalConfig(record_store_paths=record_store_paths, systems=systems)
@@ -59,4 +89,4 @@ class Config:
         if record_store_paths:
             logger.info(f"Store paths recording enabled for systems: {', '.join(systems)}")
 
-        return cls(branch=branch, pkgs=pkgs, eval=eval_config)
+        return cls(branch=parsed.branch, pkgs=pkgs, eval=eval_config)

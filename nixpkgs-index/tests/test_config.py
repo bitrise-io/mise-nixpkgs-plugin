@@ -50,7 +50,7 @@ pkgs:
         finally:
             config_path.unlink()
 
-    def test_load_config_with_default_branch(self):
+    def test_load_config_without_branch_raises_error(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("""
 pkgs:
@@ -62,8 +62,8 @@ pkgs:
             config_path = Path(f.name)
 
         try:
-            config = Config.load(config_path)
-            assert config.branch == "nixpkgs-unstable"
+            with pytest.raises(ValueError, match="must specify 'branch'"):
+                Config.load(config_path)
         finally:
             config_path.unlink()
 
@@ -85,16 +85,15 @@ pkgs:
         finally:
             config_path.unlink()
 
-    def test_load_empty_config_file(self):
+    def test_load_empty_config_file_raises_error(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("")
             f.flush()
             config_path = Path(f.name)
 
         try:
-            config = Config.load(config_path)
-            assert config.branch == "nixpkgs-unstable"
-            assert len(config.pkgs) == 0
+            with pytest.raises(ValueError, match="must specify 'branch'"):
+                Config.load(config_path)
         finally:
             config_path.unlink()
 
@@ -151,6 +150,7 @@ pkgs:
     def test_config_with_empty_attributes(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("""
+branch: nixpkgs-unstable
 pkgs:
   ruby:
     nixpkgs_attributes: []
@@ -167,6 +167,7 @@ pkgs:
     def test_config_with_missing_attributes_field(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("""
+branch: nixpkgs-unstable
 pkgs:
   ruby: {}
 """)
