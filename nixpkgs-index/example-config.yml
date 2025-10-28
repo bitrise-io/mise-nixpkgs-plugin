@@ -3,6 +3,12 @@
 
 branch: nixpkgs-unstable
 
+eval:
+  record_store_paths: true
+  systems:
+    - x86_64-linux
+    - aarch64-darwin
+
 pkgs:
   ruby:
     nixpkgs_attributes:
