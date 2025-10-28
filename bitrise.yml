@@ -22,7 +22,7 @@ workflows:
         title: Upgrade mise
         # TODO: temporary until we ship a more recent mise version with full Lua support
         inputs:
-        - content: brew install mise
+        - content: mise self-update
     - script@1:
         title: Lint
         inputs:
