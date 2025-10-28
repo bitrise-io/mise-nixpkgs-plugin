@@ -11,7 +11,7 @@ class TestErrorDetection:
     @pytest.fixture
     def repo(self, tmp_path):
         """Create a NixpkgsRepo instance for testing."""
-        return NixpkgsRepo(tmp_path / "nixpkgs")
+        return NixpkgsRepo(tmp_path / "nixpkgs", branch="nixpkgs-unstable")
 
     def test_is_known_error_attribute_not_found(self, repo):
         """Test detection of attribute not found errors."""

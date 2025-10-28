@@ -33,7 +33,7 @@ Now you can instantly fetch Ruby 3.3.8 by pointing nixpkgs to commit `abc123def4
 ### Prerequisites
 
 - Python 3.10+ and `uv`
-- `nix` command-line tool (for evaluating nixpkgs attributes)
+- Nix (for evaluating nixpkgs attributes)
 - GitHub personal access token (recommended for API rate limits)
 
 ### Quick Start
@@ -182,9 +182,6 @@ The index keeps only one entry per version, updated to the newest commit timesta
 - If all attributes fail for a commit: log warning, continue
 - Individual failures don't abort the entire indexing process
 
-## Development
-
-
 ### Running Tests
 
 ```bash
@@ -198,7 +195,7 @@ uv run pytest
 - [ ] Split the index file per package for easier diffs
 - [x] Catch known Nix eval errors like attribute is EOL and throws error on purpose
 - [ ] Use nix-eval-jobs for parallel evaluation of multiple attributes
-- [ ] Mise Python tooling
+- [x] Mise Python tooling
 
 
 ## Troubleshooting

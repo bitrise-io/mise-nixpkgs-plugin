@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class NixpkgsRepo:
     """Manages a local nixpkgs repository with shallow fetching."""
 
-    def __init__(self, repo_path: Path, branch: str = "nixpkgs-unstable"):
+    def __init__(self, repo_path: Path, branch: str):
         self.repo_path = repo_path
         self.branch = branch
 
