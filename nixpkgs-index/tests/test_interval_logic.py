@@ -15,9 +15,15 @@ class TestCalculateTargetTimes:
         target_times = calculate_target_times(start_time, step_interval, max_steps)
 
         assert len(target_times) == 3
-        assert target_times[0] == datetime(2024, 12, 25, 12, 0, 0, tzinfo=timezone.utc)  # 21 days ago
-        assert target_times[1] == datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)    # 14 days ago
-        assert target_times[2] == datetime(2025, 1, 8, 12, 0, 0, tzinfo=timezone.utc)    # 7 days ago
+        assert target_times[0] == datetime(
+            2024, 12, 25, 12, 0, 0, tzinfo=timezone.utc
+        )  # 21 days ago
+        assert target_times[1] == datetime(
+            2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc
+        )  # 14 days ago
+        assert target_times[2] == datetime(
+            2025, 1, 8, 12, 0, 0, tzinfo=timezone.utc
+        )  # 7 days ago
 
     def test_intervals_are_evenly_spaced(self):
         start_time = datetime(2025, 10, 24, 12, 0, 0, tzinfo=timezone.utc)
@@ -27,18 +33,30 @@ class TestCalculateTargetTimes:
         target_times = calculate_target_times(start_time, step_interval, max_steps)
 
         expected_times = [
-            datetime(2025, 8, 15, 12, 0, 0, tzinfo=timezone.utc),  # 70 days ago (5 * 14)
-            datetime(2025, 8, 29, 12, 0, 0, tzinfo=timezone.utc),  # 56 days ago (4 * 14)
-            datetime(2025, 9, 12, 12, 0, 0, tzinfo=timezone.utc),  # 42 days ago (3 * 14)
-            datetime(2025, 9, 26, 12, 0, 0, tzinfo=timezone.utc),  # 28 days ago (2 * 14)
-            datetime(2025, 10, 10, 12, 0, 0, tzinfo=timezone.utc), # 14 days ago (1 * 14)
+            datetime(
+                2025, 8, 15, 12, 0, 0, tzinfo=timezone.utc
+            ),  # 70 days ago (5 * 14)
+            datetime(
+                2025, 8, 29, 12, 0, 0, tzinfo=timezone.utc
+            ),  # 56 days ago (4 * 14)
+            datetime(
+                2025, 9, 12, 12, 0, 0, tzinfo=timezone.utc
+            ),  # 42 days ago (3 * 14)
+            datetime(
+                2025, 9, 26, 12, 0, 0, tzinfo=timezone.utc
+            ),  # 28 days ago (2 * 14)
+            datetime(
+                2025, 10, 10, 12, 0, 0, tzinfo=timezone.utc
+            ),  # 14 days ago (1 * 14)
         ]
 
         assert target_times == expected_times
 
         for i in range(len(target_times) - 1):
             diff = target_times[i + 1] - target_times[i]
-            assert diff == step_interval, f"Interval {i} is not {step_interval}: got {diff}"
+            assert diff == step_interval, (
+                f"Interval {i} is not {step_interval}: got {diff}"
+            )
 
     def test_with_since_limit(self):
         start_time = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
@@ -46,7 +64,9 @@ class TestCalculateTargetTimes:
         max_steps = 10
         since = datetime(2025, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
 
-        target_times = calculate_target_times(start_time, step_interval, max_steps, since)
+        target_times = calculate_target_times(
+            start_time, step_interval, max_steps, since
+        )
 
         assert len(target_times) == 2
         assert all(t >= since for t in target_times)
@@ -59,10 +79,18 @@ class TestCalculateTargetTimes:
         target_times = calculate_target_times(start_time, step_interval, max_steps)
 
         assert len(target_times) == 4
-        assert target_times[0] == datetime(2025, 1, 14, 12, 0, 0, tzinfo=timezone.utc)  # 24 hours ago
-        assert target_times[1] == datetime(2025, 1, 14, 18, 0, 0, tzinfo=timezone.utc)  # 18 hours ago
-        assert target_times[2] == datetime(2025, 1, 15, 0, 0, 0, tzinfo=timezone.utc)   # 12 hours ago
-        assert target_times[3] == datetime(2025, 1, 15, 6, 0, 0, tzinfo=timezone.utc)   # 6 hours ago
+        assert target_times[0] == datetime(
+            2025, 1, 14, 12, 0, 0, tzinfo=timezone.utc
+        )  # 24 hours ago
+        assert target_times[1] == datetime(
+            2025, 1, 14, 18, 0, 0, tzinfo=timezone.utc
+        )  # 18 hours ago
+        assert target_times[2] == datetime(
+            2025, 1, 15, 0, 0, 0, tzinfo=timezone.utc
+        )  # 12 hours ago
+        assert target_times[3] == datetime(
+            2025, 1, 15, 6, 0, 0, tzinfo=timezone.utc
+        )  # 6 hours ago
 
     def test_returns_empty_when_since_is_after_first_step(self):
         start_time = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
@@ -70,7 +98,9 @@ class TestCalculateTargetTimes:
         max_steps = 5
         since = datetime(2025, 1, 10, 0, 0, 0, tzinfo=timezone.utc)
 
-        target_times = calculate_target_times(start_time, step_interval, max_steps, since)
+        target_times = calculate_target_times(
+            start_time, step_interval, max_steps, since
+        )
 
         assert len(target_times) == 0
 
@@ -82,7 +112,9 @@ class TestCalculateTargetTimes:
         target_times = calculate_target_times(start_time, step_interval, max_steps)
 
         for i in range(len(target_times) - 1):
-            assert target_times[i] < target_times[i + 1], "Times should be in ascending order"
+            assert target_times[i] < target_times[i + 1], (
+                "Times should be in ascending order"
+            )
 
     def test_large_max_steps_with_since(self):
         start_time = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
@@ -90,7 +122,9 @@ class TestCalculateTargetTimes:
         max_steps = 1000
         since = datetime(2025, 1, 10, 0, 0, 0, tzinfo=timezone.utc)
 
-        target_times = calculate_target_times(start_time, step_interval, max_steps, since)
+        target_times = calculate_target_times(
+            start_time, step_interval, max_steps, since
+        )
 
         assert len(target_times) == 5
         assert target_times[0] >= since
@@ -141,8 +175,8 @@ class TestCreateQueryWindow:
         window = create_query_window(target_time)
 
         assert isinstance(window, TimeWindow)
-        assert hasattr(window, 'start')
-        assert hasattr(window, 'end')
+        assert hasattr(window, "start")
+        assert hasattr(window, "end")
 
 
 class TestIntervalLogicIntegration:
@@ -174,7 +208,9 @@ class TestIntervalLogicIntegration:
         windows = [create_query_window(t) for t in target_times]
 
         for i in range(len(windows) - 1):
-            assert windows[i].end <= windows[i + 1].start, f"Windows {i} and {i+1} overlap"
+            assert windows[i].end <= windows[i + 1].start, (
+                f"Windows {i} and {i + 1} overlap"
+            )
 
     def test_windows_may_overlap_for_small_intervals(self):
         start_time = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
@@ -184,5 +220,7 @@ class TestIntervalLogicIntegration:
         target_times = calculate_target_times(start_time, step_interval, max_steps)
         windows = [create_query_window(t) for t in target_times]
 
-        overlaps = any(windows[i].end > windows[i + 1].start for i in range(len(windows) - 1))
+        overlaps = any(
+            windows[i].end > windows[i + 1].start for i in range(len(windows) - 1)
+        )
         assert overlaps, "Windows should overlap when interval < window size"

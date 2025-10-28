@@ -45,7 +45,11 @@ pkgs:
             assert "ruby" in config.pkgs
             assert "python" in config.pkgs
 
-            assert config.pkgs["ruby"].nixpkgs_attributes == ["ruby", "ruby_3_4", "ruby_3_3"]
+            assert config.pkgs["ruby"].nixpkgs_attributes == [
+                "ruby",
+                "ruby_3_4",
+                "ruby_3_3",
+            ]
             assert config.pkgs["python"].nixpkgs_attributes == ["python3", "python3_11"]
         finally:
             config_path.unlink()
@@ -189,17 +193,13 @@ class TestEvalConfig:
 
     def test_create_eval_config_with_store_paths(self):
         eval_config = EvalConfig(
-            record_store_paths=True,
-            systems=["x86_64-linux", "aarch64-darwin"]
+            record_store_paths=True, systems=["x86_64-linux", "aarch64-darwin"]
         )
         assert eval_config.record_store_paths is True
         assert eval_config.systems == ["x86_64-linux", "aarch64-darwin"]
 
     def test_eval_config_with_single_system(self):
-        eval_config = EvalConfig(
-            record_store_paths=True,
-            systems=["x86_64-linux"]
-        )
+        eval_config = EvalConfig(record_store_paths=True, systems=["x86_64-linux"])
         assert len(eval_config.systems) == 1
         assert "x86_64-linux" in eval_config.systems
 

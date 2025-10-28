@@ -34,12 +34,14 @@ class ParsedConfigYAML:
 @dataclass
 class PackageConfig:
     """Configuration for a single package."""
+
     nixpkgs_attributes: List[str]
 
 
 @dataclass
 class EvalConfig:
     """Evaluation settings configuration."""
+
     record_store_paths: bool = False
     systems: List[str] = field(default_factory=list)
 
@@ -47,6 +49,7 @@ class EvalConfig:
 @dataclass
 class Config:
     """Main configuration structure."""
+
     branch: str
     pkgs: Dict[str, PackageConfig]
     eval: EvalConfig = field(default_factory=EvalConfig)
@@ -66,9 +69,7 @@ class Config:
             raise ValueError("Config file must specify 'pkgs'")
 
         parsed = ParsedConfigYAML(
-            branch=data["branch"],
-            pkgs=data["pkgs"],
-            eval=data.get("eval")
+            branch=data["branch"], pkgs=data["pkgs"], eval=data.get("eval")
         )
 
         logger.info(f"Branch: {parsed.branch}")
@@ -87,6 +88,8 @@ class Config:
         eval_config = EvalConfig(record_store_paths=record_store_paths, systems=systems)
 
         if record_store_paths:
-            logger.info(f"Store paths recording enabled for systems: {', '.join(systems)}")
+            logger.info(
+                f"Store paths recording enabled for systems: {', '.join(systems)}"
+            )
 
         return cls(branch=parsed.branch, pkgs=pkgs, eval=eval_config)

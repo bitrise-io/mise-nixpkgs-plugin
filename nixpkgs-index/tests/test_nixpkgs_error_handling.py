@@ -19,7 +19,6 @@ class TestErrorDetection:
        Did you mean one of python3, python, python2, python27 or python310?"""
 
         assert repo._is_known_eval_error(stderr)
-    
 
     def test_is_known_error_attribute_deprecated(self, repo):
         """Test detection of attribute not found errors."""
@@ -43,5 +42,3 @@ class TestErrorDetection:
        error: ruby_3_1 has been removed, as it is has reached end‐of‐life upstream"""
 
         assert repo._is_known_eval_error(stderr)
-
-

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TimeWindow:
     """Represents a time window for querying commits."""
+
     start: datetime
     end: datetime
 
@@ -20,7 +21,7 @@ def calculate_target_times(
     start_time: datetime,
     step_interval: timedelta,
     max_steps: int,
-    since: Optional[datetime] = None
+    since: Optional[datetime] = None,
 ) -> List[datetime]:
     """
     Calculate target times at regular intervals going backwards from start_time.
@@ -48,7 +49,9 @@ def calculate_target_times(
     return target_times
 
 
-def create_query_window(target_time: datetime, window_size: timedelta = timedelta(hours=1)) -> TimeWindow:
+def create_query_window(
+    target_time: datetime, window_size: timedelta = timedelta(hours=1)
+) -> TimeWindow:
     """
     Create a time window around a target time for querying commits.
 
@@ -59,14 +62,12 @@ def create_query_window(target_time: datetime, window_size: timedelta = timedelt
     Returns:
         TimeWindow with start and end times
     """
-    return TimeWindow(
-        start=target_time - window_size,
-        end=target_time + window_size
-    )
+    return TimeWindow(start=target_time - window_size, end=target_time + window_size)
 
 
 class GitHubAPIError(Exception):
     """Raised when GitHub API requests fail."""
+
     pass
 
 
@@ -78,7 +79,9 @@ class GitHubCommit:
         self.timestamp = timestamp
 
     def __repr__(self):
-        return f"GitHubCommit(sha={self.sha[:12]}, timestamp={self.timestamp.isoformat()})"
+        return (
+            f"GitHubCommit(sha={self.sha[:12]}, timestamp={self.timestamp.isoformat()})"
+        )
 
 
 class GitHubClient:
@@ -96,13 +99,17 @@ class GitHubClient:
 
     def get_branch_head(self, branch: str) -> GitHubCommit:
         """Get the HEAD commit of a branch."""
-        url = f"{self.BASE_URL}/repos/{self.REPO_OWNER}/{self.REPO_NAME}/commits/{branch}"
+        url = (
+            f"{self.BASE_URL}/repos/{self.REPO_OWNER}/{self.REPO_NAME}/commits/{branch}"
+        )
 
         logger.debug(f"Fetching HEAD of branch: {branch}")
         response = self.session.get(url)
 
         if response.status_code != 200:
-            raise GitHubAPIError(f"Failed to get branch HEAD: {response.status_code} {response.text}")
+            raise GitHubAPIError(
+                f"Failed to get branch HEAD: {response.status_code} {response.text}"
+            )
 
         data = response.json()
         sha = data["sha"]
@@ -118,7 +125,7 @@ class GitHubClient:
         step_interval: timedelta,
         since: Optional[datetime] = None,
         until: Optional[datetime] = None,
-        max_steps: Optional[int] = None
+        max_steps: Optional[int] = None,
     ) -> List[GitHubCommit]:
         """
         Discover commits at regular time intervals.
@@ -138,25 +145,33 @@ class GitHubClient:
             head = self.get_branch_head(branch)
             commits.append(head)
             start_time = head.timestamp
-            logger.info(f"Starting from branch HEAD: {head.sha[:12]} at {start_time.isoformat()}")
+            logger.info(
+                f"Starting from branch HEAD: {head.sha[:12]} at {start_time.isoformat()}"
+            )
 
         if max_steps is None:
             max_steps = 1000
 
-        target_times = calculate_target_times(start_time, step_interval, max_steps, since)
+        target_times = calculate_target_times(
+            start_time, step_interval, max_steps, since
+        )
 
         logger.info(f"Calculated {len(target_times)} target times to query")
 
         for i, target_time in enumerate(target_times, 1):
             window = create_query_window(target_time)
 
-            logger.debug(f"Step {i}/{len(target_times)}: target time {target_time.isoformat()} (window: {window.start.isoformat()} to {window.end.isoformat()})")
+            logger.debug(
+                f"Step {i}/{len(target_times)}: target time {target_time.isoformat()} (window: {window.start.isoformat()} to {window.end.isoformat()})"
+            )
 
             commit = self._get_oldest_commit_in_window(branch, window.start, window.end)
 
             if commit:
                 commits.append(commit)
-                logger.debug(f"  Found: {commit.sha[:12]} at {commit.timestamp.isoformat()}")
+                logger.debug(
+                    f"  Found: {commit.sha[:12]} at {commit.timestamp.isoformat()}"
+                )
             else:
                 logger.debug(f"  No commits found in window")
 
@@ -165,10 +180,7 @@ class GitHubClient:
         return commits
 
     def _get_oldest_commit_in_window(
-        self,
-        branch: str,
-        since: datetime,
-        until: datetime
+        self, branch: str, since: datetime, until: datetime
     ) -> Optional[GitHubCommit]:
         """
         Get the oldest commit in a time window.
@@ -181,13 +193,15 @@ class GitHubClient:
             "sha": branch,
             "since": since.isoformat(),
             "until": until.isoformat(),
-            "per_page": 100
+            "per_page": 100,
         }
 
         response = self.session.get(url, params=params)
 
         if response.status_code != 200:
-            logger.warning(f"API request failed: {response.status_code} {response.text}")
+            logger.warning(
+                f"API request failed: {response.status_code} {response.text}"
+            )
             return None
 
         commits_data = response.json()

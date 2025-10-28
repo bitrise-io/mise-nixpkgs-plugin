@@ -36,15 +36,15 @@ def setup_logging(verbosity: int) -> None:
 
     # Use colorlog for automatic color support
     formatter = colorlog.ColoredFormatter(
-        fmt='%(log_color)s%(asctime)s [%(levelname)s]%(reset)s %(name)s: %(message)s',
-        datefmt='%H:%M:%S',
+        fmt="%(log_color)s%(asctime)s [%(levelname)s]%(reset)s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
         log_colors={
-            'DEBUG': 'cyan',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'red',
-            'CRITICAL': 'red,bg_white',
-        }
+            "DEBUG": "cyan",
+            "INFO": "green",
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "red,bg_white",
+        },
     )
     handler.setFormatter(formatter)
 
@@ -69,7 +69,9 @@ def parse_interval(interval_str: str) -> timedelta:
     elif unit == "d":
         return timedelta(days=amount)
     else:
-        raise ValueError(f"Unknown interval unit: {unit}. Supported units: h (hours), d (days)")
+        raise ValueError(
+            f"Unknown interval unit: {unit}. Supported units: h (hours), d (days)"
+        )
 
 
 @click.command()
@@ -77,47 +79,44 @@ def parse_interval(interval_str: str) -> timedelta:
     "--config",
     type=click.Path(exists=True),
     required=True,
-    help="Path to the config YAML file"
+    help="Path to the config YAML file",
 )
 @click.option(
     "--output",
     type=click.Path(),
     required=True,
     default="nixpkgs-index.yaml",
-    help="Path to the output index YAML file"
+    help="Path to the output index YAML file",
 )
 @click.option(
     "--nixpkgs-path",
     type=click.Path(),
     default=".nixpkgs-checkout",
-    help="Path to clone/use for nixpkgs repository"
+    help="Path to clone/use for nixpkgs repository",
 )
 @click.option(
     "--since",
     type=str,
-    help="Start indexing from this date (ISO 8601 format, e.g. 2025-01-01T00:00:00Z)"
+    help="Start indexing from this date (ISO 8601 format, e.g. 2025-01-01T00:00:00Z)",
 )
 @click.option(
     "--until",
     type=str,
-    help="Stop indexing at this date (ISO 8601 format, default: HEAD/current time)"
+    help="Stop indexing at this date (ISO 8601 format, default: HEAD/current time)",
 )
 @click.option(
     "--step-interval",
     type=str,
     default="1d",
-    help="Time interval between evaluations (e.g. 1h, 6h, 12h, 1d, 7d, 30d)"
+    help="Time interval between evaluations (e.g. 1h, 6h, 12h, 1d, 7d, 30d)",
 )
+@click.option("--max-steps", type=int, help="Maximum number of commits to evaluate")
 @click.option(
-    "--max-steps",
-    type=int,
-    help="Maximum number of commits to evaluate"
-)
-@click.option(
-    "-v", "--verbose",
+    "-v",
+    "--verbose",
     "verbosity",
     count=True,
-    help="Increase verbosity (-v for INFO, -vv for DEBUG)"
+    help="Increase verbosity (-v for INFO, -vv for DEBUG)",
 )
 def main(
     config: str,
@@ -127,7 +126,7 @@ def main(
     until: Optional[str],
     step_interval: str,
     max_steps: Optional[int],
-    verbosity: int
+    verbosity: int,
 ) -> None:
     """Index package versions across nixpkgs commits."""
 
@@ -173,7 +172,9 @@ def main(
     if not token:
         logger.warning("No GitHub token found in GITHUB_TOKEN environment variable.")
         logger.warning("API rate limits will be very restrictive (60 requests/hour).")
-        logger.warning("Set GITHUB_TOKEN in environment or .env file for authenticated access (5000 requests/hour).")
+        logger.warning(
+            "Set GITHUB_TOKEN in environment or .env file for authenticated access (5000 requests/hour)."
+        )
 
     # Initialize GitHub API client
     github_client = GitHubClient(token)
@@ -190,7 +191,7 @@ def main(
         step_interval=interval,
         since=since_dt,
         until=until_dt,
-        max_steps=max_steps
+        max_steps=max_steps,
     )
 
     if not commits:
@@ -199,7 +200,9 @@ def main(
 
     logger.info("=" * 50)
     logger.info(f"Will evaluate {len(commits)} commits")
-    logger.info(f"Date range: {commits[0].timestamp.isoformat()} to {commits[-1].timestamp.isoformat()}")
+    logger.info(
+        f"Date range: {commits[0].timestamp.isoformat()} to {commits[-1].timestamp.isoformat()}"
+    )
     logger.info("=" * 50)
 
     # Initialize nixpkgs repository
@@ -211,7 +214,9 @@ def main(
     # Load or create index
     output_path = Path(output).resolve()
     index = Index.load(output_path)
-    logger.info(f"Starting index state: {sum(len(pkg.versions) for pkg in index.pkgs.values())} total versions")
+    logger.info(
+        f"Starting index state: {sum(len(pkg.versions) for pkg in index.pkgs.values())} total versions"
+    )
     for pkg_name, pkg_index in index.pkgs.items():
         logger.debug(f"  {pkg_name}: {len(pkg_index.versions)} versions")
 
@@ -223,7 +228,9 @@ def main(
     total_updates = 0
 
     for i, commit in enumerate(commits, 1):
-        logger.info(f"[{i}/{len(commits)}] Evaluating commit {commit.sha[:12]} ({commit.timestamp.isoformat()})")
+        logger.info(
+            f"[{i}/{len(commits)}] Evaluating commit {commit.sha[:12]} ({commit.timestamp.isoformat()})"
+        )
 
         try:
             repo.fetch_and_checkout_commit(commit.sha)
@@ -242,18 +249,22 @@ def main(
                     if config_obj.eval.record_store_paths:
                         store_paths = {}
                         for system in config_obj.eval.systems:
-                            store_path = repo.evaluate_attribute_store_path(attribute, system)
+                            store_path = repo.evaluate_attribute_store_path(
+                                attribute, system
+                            )
                             if store_path:
                                 store_paths[system] = store_path
                             else:
-                                logger.warning(f"Failed to get store path for {attribute} on {system}")
+                                logger.warning(
+                                    f"Failed to get store path for {attribute} on {system}"
+                                )
 
                     updated = index.update_version(
                         pkg_name,
                         version,
                         commit.sha,
                         commit.timestamp.isoformat(),
-                        store_paths
+                        store_paths,
                     )
 
                     if updated:
@@ -267,7 +278,9 @@ def main(
 
         index.save(output_path)
         total_versions = sum(len(pkg.versions) for pkg in index.pkgs.values())
-        logger.info(f"Commit complete: {commit_updates} new versions, total index: {total_versions}")
+        logger.info(
+            f"Commit complete: {commit_updates} new versions, total index: {total_versions}"
+        )
 
     logger.info("=" * 50)
     logger.info(f"Indexing complete!")

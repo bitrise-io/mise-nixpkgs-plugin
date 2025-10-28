@@ -13,12 +13,10 @@ class TestPackageIndex:
         assert len(pkg_index.versions) == 0
         assert isinstance(pkg_index.versions, OrderedDict)
 
-
     def test_package_index_version_lookup(self):
         pkg_index = PackageIndex()
         entry = VersionEntry(
-            nixpkgs_commit="abc123",
-            commit_timestamp="2025-01-15T12:00:00+00:00"
+            nixpkgs_commit="abc123", commit_timestamp="2025-01-15T12:00:00+00:00"
         )
         pkg_index.versions["3.3.9"] = entry
 
@@ -34,7 +32,7 @@ class TestPackageIndex:
         for i, version in enumerate(["3.3.9", "3.3.8", "3.3.7"]):
             pkg_index.versions[version] = VersionEntry(
                 nixpkgs_commit=f"commit{i}",
-                commit_timestamp="2025-01-01T00:00:00+00:00"
+                commit_timestamp="2025-01-01T00:00:00+00:00",
             )
 
         assert len(pkg_index.versions) == 3
@@ -47,7 +45,6 @@ class TestIndex:
         assert len(index.pkgs) == 0
         assert isinstance(index.pkgs, OrderedDict)
 
-
     def test_update_version_new_package(self):
         index = Index()
 
@@ -55,7 +52,7 @@ class TestIndex:
             package="ruby",
             version="3.3.9",
             commit_sha="abc123",
-            timestamp="2025-01-15T12:00:00+00:00"
+            timestamp="2025-01-15T12:00:00+00:00",
         )
 
         assert updated is True
@@ -67,7 +64,9 @@ class TestIndex:
         index = Index()
 
         index.update_version("ruby", "3.3.9", "commit1", "2025-01-15T12:00:00+00:00")
-        updated = index.update_version("ruby", "3.3.8", "commit2", "2025-01-14T12:00:00+00:00")
+        updated = index.update_version(
+            "ruby", "3.3.8", "commit2", "2025-01-14T12:00:00+00:00"
+        )
 
         assert updated is True
         assert len(index.pkgs["ruby"].versions) == 2
@@ -115,7 +114,9 @@ class TestIndex:
         index1 = Index()
         index1.update_version("ruby", "3.3.9", "commit1", "2025-01-15T12:00:00+00:00")
         index1.update_version("ruby", "3.3.8", "commit2", "2025-01-14T12:00:00+00:00")
-        index1.update_version("python", "3.11.7", "commit3", "2025-01-13T12:00:00+00:00")
+        index1.update_version(
+            "python", "3.11.7", "commit3", "2025-01-13T12:00:00+00:00"
+        )
 
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
             output_path = Path(f.name)
@@ -133,7 +134,6 @@ class TestIndex:
             assert index2.pkgs["python"].versions["3.11.7"].nixpkgs_commit == "commit3"
         finally:
             output_path.unlink()
-
 
     def test_load_empty_yaml_file(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -238,7 +238,7 @@ class TestStorePaths:
         index = Index()
         store_paths = {
             "x86_64-linux": "/nix/store/abc123...-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456...-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456...-ruby-3.3.9",
         }
 
         updated = index.update_version(
@@ -246,7 +246,7 @@ class TestStorePaths:
             version="3.3.9",
             commit_sha="commit1",
             timestamp="2025-01-15T12:00:00+00:00",
-            store_paths=store_paths
+            store_paths=store_paths,
         )
 
         assert updated is True
@@ -259,7 +259,7 @@ class TestStorePaths:
             package="ruby",
             version="3.3.9",
             commit_sha="commit1",
-            timestamp="2025-01-15T12:00:00+00:00"
+            timestamp="2025-01-15T12:00:00+00:00",
         )
 
         assert updated is True
@@ -271,8 +271,8 @@ class TestStorePaths:
             commit_timestamp="2025-01-15T12:00:00+00:00",
             store_paths={
                 "x86_64-linux": "/nix/store/path1",
-                "aarch64-darwin": "/nix/store/path2"
-            }
+                "aarch64-darwin": "/nix/store/path2",
+            },
         )
 
         assert entry.store_paths is not None
@@ -283,20 +283,26 @@ class TestStorePaths:
         index1 = Index()
         store_paths_ruby = {
             "x86_64-linux": "/nix/store/abc123...-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456...-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456...-ruby-3.3.9",
         }
         store_paths_python = {
             "x86_64-linux": "/nix/store/ghi789...-python-3.11.7",
-            "aarch64-darwin": "/nix/store/jkl012...-python-3.11.7"
+            "aarch64-darwin": "/nix/store/jkl012...-python-3.11.7",
         }
 
         index1.update_version(
-            "ruby", "3.3.9", "commit1", "2025-01-15T12:00:00+00:00",
-            store_paths=store_paths_ruby
+            "ruby",
+            "3.3.9",
+            "commit1",
+            "2025-01-15T12:00:00+00:00",
+            store_paths=store_paths_ruby,
         )
         index1.update_version(
-            "python", "3.11.7", "commit2", "2025-01-14T12:00:00+00:00",
-            store_paths=store_paths_python
+            "python",
+            "3.11.7",
+            "commit2",
+            "2025-01-14T12:00:00+00:00",
+            store_paths=store_paths_python,
         )
 
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
@@ -307,16 +313,17 @@ class TestStorePaths:
             index2 = Index.load(output_path)
 
             assert index2.pkgs["ruby"].versions["3.3.9"].store_paths == store_paths_ruby
-            assert index2.pkgs["python"].versions["3.11.7"].store_paths == store_paths_python
+            assert (
+                index2.pkgs["python"].versions["3.11.7"].store_paths
+                == store_paths_python
+            )
         finally:
             output_path.unlink()
 
     def test_save_omits_none_store_paths(self):
         """Ensure that store_paths field is not written when None."""
         index = Index()
-        index.update_version(
-            "ruby", "3.3.9", "commit1", "2025-01-15T12:00:00+00:00"
-        )
+        index.update_version("ruby", "3.3.9", "commit1", "2025-01-15T12:00:00+00:00")
 
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
             output_path = Path(f.name)
@@ -335,8 +342,11 @@ class TestStorePaths:
         index = Index()
         store_paths = {"x86_64-linux": "/nix/store/path1"}
         index.update_version(
-            "ruby", "3.3.9", "commit1", "2025-01-15T12:00:00+00:00",
-            store_paths=store_paths
+            "ruby",
+            "3.3.9",
+            "commit1",
+            "2025-01-15T12:00:00+00:00",
+            store_paths=store_paths,
         )
 
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
@@ -361,12 +371,18 @@ class TestStorePaths:
         new_store_paths = {"x86_64-linux": "/nix/store/new-path"}
 
         index.update_version(
-            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
-            store_paths=old_store_paths
+            "ruby",
+            "3.3.9",
+            "old_commit",
+            "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths,
         )
         updated = index.update_version(
-            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
-            store_paths=new_store_paths
+            "ruby",
+            "3.3.9",
+            "new_commit",
+            "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths,
         )
 
         assert updated is True
@@ -378,8 +394,11 @@ class TestStorePaths:
 
         index.update_version("ruby", "3.3.9", "c1", "2025-01-15T12:00:00+00:00")
         index.update_version(
-            "ruby", "3.3.8", "c2", "2025-01-14T12:00:00+00:00",
-            store_paths={"x86_64-linux": "/nix/store/path1"}
+            "ruby",
+            "3.3.8",
+            "c2",
+            "2025-01-14T12:00:00+00:00",
+            store_paths={"x86_64-linux": "/nix/store/path1"},
         )
 
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
@@ -391,7 +410,10 @@ class TestStorePaths:
 
             assert index2.pkgs["ruby"].versions["3.3.9"].store_paths is None
             assert index2.pkgs["ruby"].versions["3.3.8"].store_paths is not None
-            assert index2.pkgs["ruby"].versions["3.3.8"].store_paths["x86_64-linux"] == "/nix/store/path1"
+            assert (
+                index2.pkgs["ruby"].versions["3.3.8"].store_paths["x86_64-linux"]
+                == "/nix/store/path1"
+            )
         finally:
             output_path.unlink()
 
@@ -404,17 +426,23 @@ class TestStorePathOptimization:
         index = Index()
         store_paths = {
             "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9",
         }
 
         index.update_version(
-            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
-            store_paths=store_paths
+            "ruby",
+            "3.3.9",
+            "old_commit",
+            "2025-01-15T12:00:00+00:00",
+            store_paths=store_paths,
         )
 
         updated = index.update_version(
-            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
-            store_paths=store_paths
+            "ruby",
+            "3.3.9",
+            "new_commit",
+            "2025-01-16T12:00:00+00:00",
+            store_paths=store_paths,
         )
 
         assert updated is False
@@ -425,21 +453,27 @@ class TestStorePathOptimization:
         index = Index()
         old_store_paths = {
             "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9",
         }
         new_store_paths = {
             "x86_64-linux": "/nix/store/xyz789-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9",
         }
 
         index.update_version(
-            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
-            store_paths=old_store_paths
+            "ruby",
+            "3.3.9",
+            "old_commit",
+            "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths,
         )
 
         updated = index.update_version(
-            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
-            store_paths=new_store_paths
+            "ruby",
+            "3.3.9",
+            "new_commit",
+            "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths,
         )
 
         assert updated is True
@@ -449,18 +483,19 @@ class TestStorePathOptimization:
         """When old entry has no store paths, update should proceed."""
         index = Index()
 
-        index.update_version(
-            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00"
-        )
+        index.update_version("ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00")
 
         new_store_paths = {
             "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9",
         }
 
         updated = index.update_version(
-            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
-            store_paths=new_store_paths
+            "ruby",
+            "3.3.9",
+            "new_commit",
+            "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths,
         )
 
         assert updated is True
@@ -472,12 +507,15 @@ class TestStorePathOptimization:
 
         old_store_paths = {
             "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9",
         }
 
         index.update_version(
-            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
-            store_paths=old_store_paths
+            "ruby",
+            "3.3.9",
+            "old_commit",
+            "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths,
         )
 
         updated = index.update_version(
@@ -491,22 +529,26 @@ class TestStorePathOptimization:
         """When store paths have different systems, update should proceed with warning."""
         index = Index()
 
-        old_store_paths = {
-            "x86_64-linux": "/nix/store/abc123-ruby-3.3.9"
-        }
+        old_store_paths = {"x86_64-linux": "/nix/store/abc123-ruby-3.3.9"}
         new_store_paths = {
             "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9",
         }
 
         index.update_version(
-            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
-            store_paths=old_store_paths
+            "ruby",
+            "3.3.9",
+            "old_commit",
+            "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths,
         )
 
         updated = index.update_version(
-            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
-            store_paths=new_store_paths
+            "ruby",
+            "3.3.9",
+            "new_commit",
+            "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths,
         )
 
         assert updated is True
@@ -518,21 +560,27 @@ class TestStorePathOptimization:
 
         old_store_paths = {
             "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9",
         }
         new_store_paths = {
             "x86_64-linux": "/nix/store/xyz789-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9",
         }
 
         index.update_version(
-            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
-            store_paths=old_store_paths
+            "ruby",
+            "3.3.9",
+            "old_commit",
+            "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths,
         )
 
         updated = index.update_version(
-            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
-            store_paths=new_store_paths
+            "ruby",
+            "3.3.9",
+            "new_commit",
+            "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths,
         )
 
         assert updated is True
@@ -542,9 +590,7 @@ class TestStorePathOptimization:
         """When neither has store paths, normal timestamp comparison applies."""
         index = Index()
 
-        index.update_version(
-            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00"
-        )
+        index.update_version("ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00")
 
         updated = index.update_version(
             "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00"
@@ -559,21 +605,27 @@ class TestStorePathOptimization:
 
         old_store_paths = {
             "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9",
         }
         new_store_paths = {
             "x86_64-linux": "/nix/store/xyz789-ruby-3.3.9",
-            "aarch64-darwin": "/nix/store/xyz000-ruby-3.3.9"
+            "aarch64-darwin": "/nix/store/xyz000-ruby-3.3.9",
         }
 
         index.update_version(
-            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
-            store_paths=old_store_paths
+            "ruby",
+            "3.3.9",
+            "new_commit",
+            "2025-01-16T12:00:00+00:00",
+            store_paths=old_store_paths,
         )
 
         updated = index.update_version(
-            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
-            store_paths=new_store_paths
+            "ruby",
+            "3.3.9",
+            "old_commit",
+            "2025-01-15T12:00:00+00:00",
+            store_paths=new_store_paths,
         )
 
         assert updated is False

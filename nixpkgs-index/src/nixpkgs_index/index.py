@@ -36,7 +36,7 @@ class ParsedIndexYAML:
 
 def _represent_ordereddict(dumper, data):
     """Represent OrderedDict as a regular YAML mapping."""
-    return dumper.represent_mapping('tag:yaml.org,2002:map', data.items())
+    return dumper.represent_mapping("tag:yaml.org,2002:map", data.items())
 
 
 yaml.add_representer(OrderedDict, _represent_ordereddict)
@@ -45,6 +45,7 @@ yaml.add_representer(OrderedDict, _represent_ordereddict)
 @dataclass
 class VersionEntry:
     """A single version entry in the index."""
+
     nixpkgs_commit: str
     commit_timestamp: str
     store_paths: Optional[Dict[str, str]] = None
@@ -53,12 +54,14 @@ class VersionEntry:
 @dataclass
 class PackageIndex:
     """Index for a single package."""
+
     versions: Dict[str, VersionEntry] = field(default_factory=OrderedDict)
 
 
 @dataclass
 class Index:
     """Main index structure."""
+
     pkgs: Dict[str, PackageIndex] = field(default_factory=OrderedDict)
 
     @classmethod
@@ -81,7 +84,7 @@ class Index:
                 parsed_versions[ver] = ParsedVersionEntry(
                     nixpkgs_commit=version_data["nixpkgs_commit"],
                     commit_timestamp=version_data["commit_timestamp"],
-                    store_paths=version_data.get("store_paths")
+                    store_paths=version_data.get("store_paths"),
                 )
             parsed_pkgs[pkg_name] = parsed_versions
 
@@ -95,13 +98,15 @@ class Index:
                 pkg_index.versions[ver] = VersionEntry(
                     nixpkgs_commit=parsed_entry.nixpkgs_commit,
                     commit_timestamp=parsed_entry.commit_timestamp,
-                    store_paths=parsed_entry.store_paths
+                    store_paths=parsed_entry.store_paths,
                 )
                 total_versions += 1
             index.pkgs[pkg_name] = pkg_index
             logger.debug(f"  {pkg_name}: {len(pkg_index.versions)} versions")
 
-        logger.info(f"Loaded {len(index.pkgs)} packages with {total_versions} total versions")
+        logger.info(
+            f"Loaded {len(index.pkgs)} packages with {total_versions} total versions"
+        )
         return index
 
     def save(self, path: Path) -> None:
@@ -111,7 +116,9 @@ class Index:
         for pkg_name in sorted(self.pkgs.keys()):
             pkg_index = self.pkgs[pkg_name]
             data["pkgs"][pkg_name] = OrderedDict()
-            sorted_versions = sorted(pkg_index.versions.keys(), key=version.parse, reverse=True)
+            sorted_versions = sorted(
+                pkg_index.versions.keys(), key=version.parse, reverse=True
+            )
             for ver in sorted_versions:
                 entry = pkg_index.versions[ver]
                 entry_dict = asdict(entry)
@@ -124,7 +131,9 @@ class Index:
         with open(path, "w") as f:
             yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 
-        logger.debug(f"Saved index: {len(self.pkgs)} packages, {total_versions} versions")
+        logger.debug(
+            f"Saved index: {len(self.pkgs)} packages, {total_versions} versions"
+        )
 
     def update_version(
         self,
@@ -132,7 +141,7 @@ class Index:
         version: str,
         commit_sha: str,
         timestamp: str,
-        store_paths: Optional[Dict[str, str]] = None
+        store_paths: Optional[Dict[str, str]] = None,
     ) -> bool:
         """
         Update or add a version entry.
@@ -146,7 +155,7 @@ class Index:
             self.pkgs[package].versions[version] = VersionEntry(
                 nixpkgs_commit=commit_sha,
                 commit_timestamp=timestamp,
-                store_paths=store_paths
+                store_paths=store_paths,
             )
             return True
 
@@ -154,14 +163,18 @@ class Index:
         existing_entry = self.pkgs[package].versions[version]
         if timestamp > existing_entry.commit_timestamp:
             # Check if store objects actually changed
-            if self._should_update_based_on_store_paths(existing_entry.store_paths, store_paths):
+            if self._should_update_based_on_store_paths(
+                existing_entry.store_paths, store_paths
+            ):
                 old_commit = existing_entry.nixpkgs_commit
                 self.pkgs[package].versions[version] = VersionEntry(
                     nixpkgs_commit=commit_sha,
                     commit_timestamp=timestamp,
-                    store_paths=store_paths
+                    store_paths=store_paths,
                 )
-                logger.debug(f"Updated: {package}:{version} ({old_commit[:12]} -> {commit_sha[:12]})")
+                logger.debug(
+                    f"Updated: {package}:{version} ({old_commit[:12]} -> {commit_sha[:12]})"
+                )
                 return True
             else:
                 logger.debug(f"Skipped: {package}:{version} (store objects unchanged)")
@@ -172,7 +185,7 @@ class Index:
     def _should_update_based_on_store_paths(
         self,
         old_store_paths: Optional[Dict[str, str]],
-        new_store_paths: Optional[Dict[str, str]]
+        new_store_paths: Optional[Dict[str, str]],
     ) -> bool:
         """
         Determine if an update should proceed based on store path comparison.
@@ -187,7 +200,9 @@ class Index:
         # If old entry has no store paths, we can't optimize - do the update
         if old_store_paths is None:
             if new_store_paths is not None:
-                logger.warning("No store paths in index entry, updating with store paths from new commit")
+                logger.warning(
+                    "No store paths in index entry, updating with store paths from new commit"
+                )
             return True
 
         # If new entry has no store paths, we can't compare - do the update

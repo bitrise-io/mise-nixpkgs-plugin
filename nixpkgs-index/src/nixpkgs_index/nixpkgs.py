@@ -29,17 +29,14 @@ class NixpkgsRepo:
         self.repo_path.mkdir(parents=True, exist_ok=True)
 
         subprocess.run(
-            ["git", "init"],
-            cwd=self.repo_path,
-            check=True,
-            capture_output=True
+            ["git", "init"], cwd=self.repo_path, check=True, capture_output=True
         )
 
         subprocess.run(
             ["git", "remote", "add", "origin", "https://github.com/NixOS/nixpkgs.git"],
             cwd=self.repo_path,
             check=True,
-            capture_output=True
+            capture_output=True,
         )
 
         logger.debug("Configuring sparse-checkout for pkgs and lib directories")
@@ -47,14 +44,14 @@ class NixpkgsRepo:
             ["git", "sparse-checkout", "init", "--cone"],
             cwd=self.repo_path,
             check=True,
-            capture_output=True
+            capture_output=True,
         )
 
         subprocess.run(
             ["git", "sparse-checkout", "set", "pkgs", "lib"],
             cwd=self.repo_path,
             check=True,
-            capture_output=True
+            capture_output=True,
         )
 
         logger.info("Repository initialized successfully")
@@ -73,7 +70,7 @@ class NixpkgsRepo:
                 check=True,
                 capture_output=True,
                 text=True,
-                timeout=300
+                timeout=300,
             )
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to fetch commit {commit_sha[:12]}: {e.stderr}")
@@ -85,7 +82,7 @@ class NixpkgsRepo:
             cwd=self.repo_path,
             check=True,
             capture_output=True,
-            text=True
+            text=True,
         )
 
     def evaluate_attribute(self, attribute: str) -> Optional[str]:
@@ -99,7 +96,7 @@ class NixpkgsRepo:
                 cwd=self.repo_path,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
             if result.returncode == 0:
                 version = result.stdout.strip()
@@ -119,7 +116,9 @@ class NixpkgsRepo:
             logger.debug(f"Evaluation error for {attribute}: {e}")
             return None
 
-    def evaluate_attribute_store_path(self, attribute: str, system: str) -> Optional[str]:
+    def evaluate_attribute_store_path(
+        self, attribute: str, system: str
+    ) -> Optional[str]:
         """
         Evaluate a nixpkgs attribute for a specific system and return its store path.
         Returns None if evaluation fails.
@@ -130,7 +129,7 @@ class NixpkgsRepo:
                 cwd=self.repo_path,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
             if result.returncode == 0:
                 store_path = result.stdout.strip()
@@ -139,9 +138,13 @@ class NixpkgsRepo:
             else:
                 stderr = result.stderr.strip()
                 if self._is_known_eval_error(stderr):
-                    logger.debug(f"Known error for {attribute} on {system}, skipping...")
+                    logger.debug(
+                        f"Known error for {attribute} on {system}, skipping..."
+                    )
                 else:
-                    logger.warning(f"Nix eval failed for {attribute} on {system}: {stderr}")
+                    logger.warning(
+                        f"Nix eval failed for {attribute} on {system}: {stderr}"
+                    )
                 return None
         except subprocess.TimeoutExpired:
             logger.debug(f"Evaluation timeout: {attribute} on {system}")
@@ -155,7 +158,6 @@ class NixpkgsRepo:
             "has been removed",
             "end-of-life",
             "does not provide attribute",
-            " not found inside path "
+            " not found inside path ",
         ]
         return any(pattern in stderr for pattern in known_error_patterns)
-

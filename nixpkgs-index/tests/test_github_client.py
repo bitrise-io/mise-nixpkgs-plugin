@@ -47,17 +47,13 @@ class TestGitHubClient:
 
         assert "Authorization" not in client.session.headers
 
-    @patch('requests.Session.get')
+    @patch("requests.Session.get")
     def test_get_branch_head_success(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "sha": "abc123",
-            "commit": {
-                "committer": {
-                    "date": "2025-01-15T12:00:00Z"
-                }
-            }
+            "commit": {"committer": {"date": "2025-01-15T12:00:00Z"}},
         }
         mock_get.return_value = mock_response
 
@@ -67,7 +63,7 @@ class TestGitHubClient:
         assert commit.sha == "abc123"
         assert commit.timestamp == datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
 
-    @patch('requests.Session.get')
+    @patch("requests.Session.get")
     def test_get_branch_head_failure(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 404
@@ -81,17 +77,12 @@ class TestGitHubClient:
 
         assert "Failed to get branch HEAD" in str(exc_info.value)
 
-    @patch('requests.Session.get')
+    @patch("requests.Session.get")
     def test_check_rate_limit_success(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            "resources": {
-                "core": {
-                    "remaining": 4999,
-                    "limit": 5000
-                }
-            }
+            "resources": {"core": {"remaining": 4999, "limit": 5000}}
         }
         mock_get.return_value = mock_response
 
@@ -101,7 +92,7 @@ class TestGitHubClient:
         assert remaining == 4999
         assert limit == 5000
 
-    @patch('requests.Session.get')
+    @patch("requests.Session.get")
     def test_check_rate_limit_failure(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 500
@@ -113,27 +104,19 @@ class TestGitHubClient:
         assert remaining == 0
         assert limit == 0
 
-    @patch('requests.Session.get')
+    @patch("requests.Session.get")
     def test_get_oldest_commit_in_window_success(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = [
             {
                 "sha": "newest_commit",
-                "commit": {
-                    "committer": {
-                        "date": "2025-01-15T13:00:00Z"
-                    }
-                }
+                "commit": {"committer": {"date": "2025-01-15T13:00:00Z"}},
             },
             {
                 "sha": "oldest_commit",
-                "commit": {
-                    "committer": {
-                        "date": "2025-01-15T11:00:00Z"
-                    }
-                }
-            }
+                "commit": {"committer": {"date": "2025-01-15T11:00:00Z"}},
+            },
         ]
         mock_get.return_value = mock_response
 
@@ -146,7 +129,7 @@ class TestGitHubClient:
         assert commit is not None
         assert commit.sha == "oldest_commit"
 
-    @patch('requests.Session.get')
+    @patch("requests.Session.get")
     def test_get_oldest_commit_in_window_empty(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
@@ -161,7 +144,7 @@ class TestGitHubClient:
 
         assert commit is None
 
-    @patch('requests.Session.get')
+    @patch("requests.Session.get")
     def test_get_oldest_commit_in_window_api_error(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 500
@@ -176,47 +159,43 @@ class TestGitHubClient:
 
         assert commit is None
 
-    @patch.object(GitHubClient, 'get_branch_head')
-    @patch.object(GitHubClient, '_get_oldest_commit_in_window')
+    @patch.object(GitHubClient, "get_branch_head")
+    @patch.object(GitHubClient, "_get_oldest_commit_in_window")
     def test_discover_commits_at_intervals_basic(self, mock_get_oldest, mock_get_head):
         head_commit = GitHubCommit(
-            "head_sha",
-            datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
+            "head_sha", datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
         )
         mock_get_head.return_value = head_commit
 
         # Simulate finding commits at different times
         window_commits = [
             GitHubCommit(
-                "commit1",
-                datetime(2025, 1, 8, 12, 0, 0, tzinfo=timezone.utc)
+                "commit1", datetime(2025, 1, 8, 12, 0, 0, tzinfo=timezone.utc)
             ),
             GitHubCommit(
-                "commit2",
-                datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+                "commit2", datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
             ),
         ]
         mock_get_oldest.side_effect = window_commits
 
         client = GitHubClient()
         commits = client.discover_commits_at_intervals(
-            branch="nixpkgs-unstable",
-            step_interval=timedelta(days=7),
-            max_steps=2
+            branch="nixpkgs-unstable", step_interval=timedelta(days=7), max_steps=2
         )
 
         assert len(commits) == 3  # head + 2 discovered
         assert commits[0].sha == "commit2"  # Chronological order
         assert commits[-1].sha == "head_sha"
 
-    @patch.object(GitHubClient, 'get_branch_head')
-    @patch.object(GitHubClient, '_get_oldest_commit_in_window')
-    def test_discover_commits_with_until_parameter(self, mock_get_oldest, mock_get_head):
+    @patch.object(GitHubClient, "get_branch_head")
+    @patch.object(GitHubClient, "_get_oldest_commit_in_window")
+    def test_discover_commits_with_until_parameter(
+        self, mock_get_oldest, mock_get_head
+    ):
         until_time = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
 
         window_commit = GitHubCommit(
-            "commit1",
-            datetime(2025, 1, 8, 12, 0, 0, tzinfo=timezone.utc)
+            "commit1", datetime(2025, 1, 8, 12, 0, 0, tzinfo=timezone.utc)
         )
         mock_get_oldest.return_value = window_commit
 
@@ -225,7 +204,7 @@ class TestGitHubClient:
             branch="nixpkgs-unstable",
             step_interval=timedelta(days=7),
             until=until_time,
-            max_steps=1
+            max_steps=1,
         )
 
         # Should not call get_branch_head when until is specified
@@ -233,12 +212,11 @@ class TestGitHubClient:
         assert len(commits) == 1
         assert commits[0].sha == "commit1"
 
-    @patch.object(GitHubClient, 'get_branch_head')
-    @patch.object(GitHubClient, '_get_oldest_commit_in_window')
+    @patch.object(GitHubClient, "get_branch_head")
+    @patch.object(GitHubClient, "_get_oldest_commit_in_window")
     def test_discover_commits_default_max_steps(self, mock_get_oldest, mock_get_head):
         head_commit = GitHubCommit(
-            "head_sha",
-            datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
+            "head_sha", datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
         )
         mock_get_head.return_value = head_commit
         mock_get_oldest.return_value = None  # No commits found
@@ -246,7 +224,7 @@ class TestGitHubClient:
         client = GitHubClient()
         commits = client.discover_commits_at_intervals(
             branch="nixpkgs-unstable",
-            step_interval=timedelta(days=7)
+            step_interval=timedelta(days=7),
             # Note: max_steps not specified
         )
 
@@ -254,32 +232,25 @@ class TestGitHubClient:
         # Verify _get_oldest_commit_in_window was called multiple times
         assert mock_get_oldest.call_count == 1000
 
-    @patch.object(GitHubClient, 'get_branch_head')
-    @patch.object(GitHubClient, '_get_oldest_commit_in_window')
-    def test_discover_commits_returns_chronological_order(self, mock_get_oldest, mock_get_head):
+    @patch.object(GitHubClient, "get_branch_head")
+    @patch.object(GitHubClient, "_get_oldest_commit_in_window")
+    def test_discover_commits_returns_chronological_order(
+        self, mock_get_oldest, mock_get_head
+    ):
         head_commit = GitHubCommit(
-            "newest",
-            datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
+            "newest", datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
         )
         mock_get_head.return_value = head_commit
 
         window_commits = [
-            GitHubCommit(
-                "middle",
-                datetime(2025, 1, 8, 12, 0, 0, tzinfo=timezone.utc)
-            ),
-            GitHubCommit(
-                "oldest",
-                datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-            ),
+            GitHubCommit("middle", datetime(2025, 1, 8, 12, 0, 0, tzinfo=timezone.utc)),
+            GitHubCommit("oldest", datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)),
         ]
         mock_get_oldest.side_effect = window_commits
 
         client = GitHubClient()
         commits = client.discover_commits_at_intervals(
-            branch="nixpkgs-unstable",
-            step_interval=timedelta(days=7),
-            max_steps=2
+            branch="nixpkgs-unstable", step_interval=timedelta(days=7), max_steps=2
         )
 
         assert commits[0].sha == "oldest"
