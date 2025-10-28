@@ -394,3 +394,187 @@ class TestStorePaths:
             assert index2.pkgs["ruby"].versions["3.3.8"].store_paths["x86_64-linux"] == "/nix/store/path1"
         finally:
             output_path.unlink()
+
+
+class TestStorePathOptimization:
+    """Tests for store path comparison optimization in commit updates."""
+
+    def test_store_paths_unchanged_skip_update(self):
+        """When store paths match, update should be skipped even with newer timestamp."""
+        index = Index()
+        store_paths = {
+            "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+        }
+
+        index.update_version(
+            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
+            store_paths=store_paths
+        )
+
+        updated = index.update_version(
+            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
+            store_paths=store_paths
+        )
+
+        assert updated is False
+        assert index.pkgs["ruby"].versions["3.3.9"].nixpkgs_commit == "old_commit"
+
+    def test_store_paths_changed_do_update(self):
+        """When store paths differ, update should proceed."""
+        index = Index()
+        old_store_paths = {
+            "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+        }
+        new_store_paths = {
+            "x86_64-linux": "/nix/store/xyz789-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+        }
+
+        index.update_version(
+            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths
+        )
+
+        updated = index.update_version(
+            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths
+        )
+
+        assert updated is True
+        assert index.pkgs["ruby"].versions["3.3.9"].nixpkgs_commit == "new_commit"
+
+    def test_old_entry_no_store_paths_new_has_them_do_update(self):
+        """When old entry has no store paths, update should proceed."""
+        index = Index()
+
+        index.update_version(
+            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00"
+        )
+
+        new_store_paths = {
+            "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+        }
+
+        updated = index.update_version(
+            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths
+        )
+
+        assert updated is True
+        assert index.pkgs["ruby"].versions["3.3.9"].nixpkgs_commit == "new_commit"
+
+    def test_old_entry_has_store_paths_new_has_none_do_update(self):
+        """When new entry has no store paths, update should proceed."""
+        index = Index()
+
+        old_store_paths = {
+            "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+        }
+
+        index.update_version(
+            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths
+        )
+
+        updated = index.update_version(
+            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00"
+        )
+
+        assert updated is True
+        assert index.pkgs["ruby"].versions["3.3.9"].nixpkgs_commit == "new_commit"
+
+    def test_different_systems_between_old_and_new_do_update(self):
+        """When store paths have different systems, update should proceed with warning."""
+        index = Index()
+
+        old_store_paths = {
+            "x86_64-linux": "/nix/store/abc123-ruby-3.3.9"
+        }
+        new_store_paths = {
+            "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+        }
+
+        index.update_version(
+            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths
+        )
+
+        updated = index.update_version(
+            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths
+        )
+
+        assert updated is True
+        assert index.pkgs["ruby"].versions["3.3.9"].nixpkgs_commit == "new_commit"
+
+    def test_single_path_changed_in_multi_system_do_update(self):
+        """When one of multiple store paths changes, update should proceed."""
+        index = Index()
+
+        old_store_paths = {
+            "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+        }
+        new_store_paths = {
+            "x86_64-linux": "/nix/store/xyz789-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+        }
+
+        index.update_version(
+            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths
+        )
+
+        updated = index.update_version(
+            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths
+        )
+
+        assert updated is True
+        assert index.pkgs["ruby"].versions["3.3.9"].nixpkgs_commit == "new_commit"
+
+    def test_neither_has_store_paths_timestamp_comparison_applies(self):
+        """When neither has store paths, normal timestamp comparison applies."""
+        index = Index()
+
+        index.update_version(
+            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00"
+        )
+
+        updated = index.update_version(
+            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00"
+        )
+
+        assert updated is True
+        assert index.pkgs["ruby"].versions["3.3.9"].nixpkgs_commit == "new_commit"
+
+    def test_old_timestamp_prevents_update_regardless_of_store_paths(self):
+        """When new timestamp is older, update should not happen."""
+        index = Index()
+
+        old_store_paths = {
+            "x86_64-linux": "/nix/store/abc123-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456-ruby-3.3.9"
+        }
+        new_store_paths = {
+            "x86_64-linux": "/nix/store/xyz789-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/xyz000-ruby-3.3.9"
+        }
+
+        index.update_version(
+            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
+            store_paths=old_store_paths
+        )
+
+        updated = index.update_version(
+            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
+            store_paths=new_store_paths
+        )
+
+        assert updated is False
+        assert index.pkgs["ruby"].versions["3.3.9"].nixpkgs_commit == "new_commit"

@@ -194,8 +194,10 @@ uv run pytest
 ### TODO and Future Work
 
 - [x] Evaluate store objects and store them per-system in the index
-- [ ] Optimize the commit update by comparing the old vs. new store objects and only update the commit hash if the store object changed (if not, nothing relevant changed for that package/version)
+- [x] Optimize the commit update by comparing the old vs. new store objects and only update the commit hash if the store object changed (if not, nothing relevant changed for that package/version)
 - [ ] Split the index file per package for easier diffs
+- [ ] Catch known Nix eval errors like attribute is EOL and throws error on purpose
+- [ ] Use nix-eval-jobs for parallel evaluation of multiple attributes
 
 
 ## Troubleshooting

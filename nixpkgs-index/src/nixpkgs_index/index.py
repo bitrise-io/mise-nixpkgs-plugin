@@ -136,7 +136,8 @@ class Index:
     ) -> bool:
         """
         Update or add a version entry.
-        Returns True if the entry was updated, False if it already had a newer timestamp.
+        Returns True if the entry was updated, False if it already had a newer timestamp
+        or if the store object hasn't changed.
         """
         if package not in self.pkgs:
             self.pkgs[package] = PackageIndex()
@@ -152,13 +153,64 @@ class Index:
         # Update only if this commit is newer
         existing_entry = self.pkgs[package].versions[version]
         if timestamp > existing_entry.commit_timestamp:
-            old_commit = existing_entry.nixpkgs_commit
-            self.pkgs[package].versions[version] = VersionEntry(
-                nixpkgs_commit=commit_sha,
-                commit_timestamp=timestamp,
-                store_paths=store_paths
-            )
-            logger.debug(f"Updated: {package}:{version} ({old_commit[:12]} -> {commit_sha[:12]})")
-            return True
+            # Check if store objects actually changed
+            if self._should_update_based_on_store_paths(existing_entry.store_paths, store_paths):
+                old_commit = existing_entry.nixpkgs_commit
+                self.pkgs[package].versions[version] = VersionEntry(
+                    nixpkgs_commit=commit_sha,
+                    commit_timestamp=timestamp,
+                    store_paths=store_paths
+                )
+                logger.debug(f"Updated: {package}:{version} ({old_commit[:12]} -> {commit_sha[:12]})")
+                return True
+            else:
+                logger.debug(f"Skipped: {package}:{version} (store objects unchanged)")
+                return False
 
         return False
+
+    def _should_update_based_on_store_paths(
+        self,
+        old_store_paths: Optional[Dict[str, str]],
+        new_store_paths: Optional[Dict[str, str]]
+    ) -> bool:
+        """
+        Determine if an update should proceed based on store path comparison.
+
+        Returns True if:
+        - Store paths changed
+        - Unable to compare (missing in index or new entry), with warning
+
+        Returns False if:
+        - Both have store paths and they match
+        """
+        # If old entry has no store paths, we can't optimize - do the update
+        if old_store_paths is None:
+            if new_store_paths is not None:
+                logger.warning("No store paths in index entry, updating with store paths from new commit")
+            return True
+
+        # If new entry has no store paths, we can't compare - do the update
+        if new_store_paths is None:
+            logger.warning("No store paths in new entry, proceeding with commit update")
+            return True
+
+        # Both have store paths - compare them
+        # Store paths match if all systems are identical
+        if old_store_paths == new_store_paths:
+            return False
+
+        # Store paths differ - check if it's just missing systems
+        old_systems = set(old_store_paths.keys())
+        new_systems = set(new_store_paths.keys())
+
+        if old_systems != new_systems:
+            logger.warning(
+                f"Store paths evaluated for different systems: "
+                f"old={sorted(old_systems)}, new={sorted(new_systems)}. "
+                f"Proceeding with commit update."
+            )
+            return True
+
+        # Same systems but different paths - the store object changed
+        return True
