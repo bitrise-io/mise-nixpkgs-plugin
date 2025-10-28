@@ -3,7 +3,7 @@
 import pytest
 import tempfile
 from pathlib import Path
-from nixpkgs_index.config import Config, PackageConfig
+from nixpkgs_index.config import Config, PackageConfig, EvalConfig
 
 
 class TestPackageConfig:
@@ -176,5 +176,144 @@ pkgs:
         try:
             config = Config.load(config_path)
             assert config.pkgs["ruby"].nixpkgs_attributes == []
+        finally:
+            config_path.unlink()
+
+
+class TestEvalConfig:
+    def test_create_eval_config_default(self):
+        eval_config = EvalConfig()
+        assert eval_config.record_store_paths is False
+        assert eval_config.systems == []
+
+    def test_create_eval_config_with_store_paths(self):
+        eval_config = EvalConfig(
+            record_store_paths=True,
+            systems=["x86_64-linux", "aarch64-darwin"]
+        )
+        assert eval_config.record_store_paths is True
+        assert eval_config.systems == ["x86_64-linux", "aarch64-darwin"]
+
+    def test_eval_config_with_single_system(self):
+        eval_config = EvalConfig(
+            record_store_paths=True,
+            systems=["x86_64-linux"]
+        )
+        assert len(eval_config.systems) == 1
+        assert "x86_64-linux" in eval_config.systems
+
+
+class TestConfigWithEval:
+    def test_load_config_without_eval_section(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("""
+branch: nixpkgs-unstable
+pkgs:
+  ruby:
+    nixpkgs_attributes:
+      - ruby
+""")
+            f.flush()
+            config_path = Path(f.name)
+
+        try:
+            config = Config.load(config_path)
+            assert config.eval is not None
+            assert config.eval.record_store_paths is False
+            assert config.eval.systems == []
+        finally:
+            config_path.unlink()
+
+    def test_load_config_with_eval_disabled(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("""
+branch: nixpkgs-unstable
+pkgs:
+  ruby:
+    nixpkgs_attributes:
+      - ruby
+eval:
+  record_store_paths: false
+""")
+            f.flush()
+            config_path = Path(f.name)
+
+        try:
+            config = Config.load(config_path)
+            assert config.eval.record_store_paths is False
+            assert config.eval.systems == []
+        finally:
+            config_path.unlink()
+
+    def test_load_config_with_eval_enabled(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("""
+branch: nixpkgs-unstable
+pkgs:
+  ruby:
+    nixpkgs_attributes:
+      - ruby
+eval:
+  record_store_paths: true
+  systems:
+    - x86_64-linux
+    - aarch64-darwin
+""")
+            f.flush()
+            config_path = Path(f.name)
+
+        try:
+            config = Config.load(config_path)
+            assert config.eval.record_store_paths is True
+            assert config.eval.systems == ["x86_64-linux", "aarch64-darwin"]
+        finally:
+            config_path.unlink()
+
+    def test_load_config_with_multiple_systems(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("""
+branch: nixpkgs-unstable
+pkgs:
+  ruby:
+    nixpkgs_attributes:
+      - ruby
+eval:
+  record_store_paths: true
+  systems:
+    - x86_64-linux
+    - x86_64-darwin
+    - aarch64-linux
+    - aarch64-darwin
+""")
+            f.flush()
+            config_path = Path(f.name)
+
+        try:
+            config = Config.load(config_path)
+            assert config.eval.record_store_paths is True
+            assert len(config.eval.systems) == 4
+            assert "x86_64-linux" in config.eval.systems
+            assert "aarch64-darwin" in config.eval.systems
+        finally:
+            config_path.unlink()
+
+    def test_load_config_with_eval_no_systems(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("""
+branch: nixpkgs-unstable
+pkgs:
+  ruby:
+    nixpkgs_attributes:
+      - ruby
+eval:
+  record_store_paths: true
+""")
+            f.flush()
+            config_path = Path(f.name)
+
+        try:
+            config = Config.load(config_path)
+            assert config.eval.record_store_paths is True
+            assert config.eval.systems == []
         finally:
             config_path.unlink()

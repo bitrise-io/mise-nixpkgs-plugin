@@ -115,3 +115,30 @@ class NixpkgsRepo:
             logger.debug(f"Evaluation error for {attribute}: {e}")
             return None
 
+    def evaluate_attribute_store_path(self, attribute: str, system: str) -> Optional[str]:
+        """
+        Evaluate a nixpkgs attribute for a specific system and return its store path.
+        Returns None if evaluation fails.
+        """
+        try:
+            result = subprocess.run(
+                ["nix", "eval", "--file", ".", attribute, "--raw", "--system", system],
+                cwd=self.repo_path,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            if result.returncode == 0:
+                store_path = result.stdout.strip()
+                logger.debug(f"Eval {attribute} ({system}): {store_path}")
+                return store_path
+            else:
+                logger.warning(f"Nix eval failed for {attribute} on {system}: {result.stderr.strip()}")
+                return None
+        except subprocess.TimeoutExpired:
+            logger.debug(f"Evaluation timeout: {attribute} on {system}")
+            return None
+        except Exception as e:
+            logger.debug(f"Evaluation error for {attribute} on {system}: {e}")
+            return None
+

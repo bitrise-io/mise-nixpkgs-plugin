@@ -11,6 +11,7 @@ The CLI tool should have a declarative config file for what nixpkgs attributes t
 ```yml
 # Which branch of nixpkgs to use. This is important because the tip of the master branch might be uncached and we are only interested in Nix store entries that are already present in the binary cache. The nixpkgs-unstable (and other channel branches) are only advanced once Hydra has built and cached the packages.
 branch: nixpkgs-unstable
+
 pkgs:
   # Human-friendly package ID, this is independent of the precise nixpkgs attribute
   ruby:
@@ -26,6 +27,15 @@ pkgs:
     - ruby_3_3
     - ruby_3_2
     - ruby_3_1
+
+# Evaluation settings
+eval:
+  # Besides the nixpkgs commit hash, also record the Nix store paths for each system defined below.
+  # This is useful for fetching store objects from a binary cache directly without needing to evaluate nixpkgs again. 
+  record_store_paths: true
+  systems:
+  - x86_64-linux
+  - aarch64-darwin
 ```
 
 The output is an index, which is another YML file for simplicity:
@@ -53,6 +63,10 @@ The basic idea:
 3. Evaluate the nixpkgs attributes in the checkout and read the version numbers
 4. Update the index file with the new data
 5. Move back in time by the step interval and repeat until we reach the configured limit
+
+### Optional: record store paths
+
+If `eval.record_store_paths` is enabled in the config, the tool will also evaluate and record the Nix store paths for each system defined in the config file. This allows users to fetch the exact store objects from a binary cache without needing to have a nixpkgs checkout and evaluate Nix attributes again.
 
 ### Implementation details
 
@@ -83,6 +97,19 @@ Algorithm for discovering commits:
 #### Evaluating nixpkgs attributes
 
 Once a commit is checked out, run `nix eval --file . --raw ruby_3_5.version` to get the version of the `ruby_3_5` attribute.
+
+If `eval.record_store_paths` is enabled, also run `nix eval --file . --raw <attribute> --system <system>` (the main attribute, not `.version`) for each system defined in the config. The nix store paths should be recorded alongside the commit SHA and timestamp in the index, like this:
+
+```yml
+pkgs:
+  ruby:
+    "3.3.9":
+        nixpkgs_commit: c8aa8cc00a5cb57fada0851a038d35c08a36a2bb
+        commit_timestamp: ...
+        store_paths:
+          x86_64-linux: /nix/store/...
+          aarch64-darwin: /nix/store/...
+```
 
 #### Updating the index file
 

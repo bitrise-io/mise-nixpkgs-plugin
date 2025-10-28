@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from collections import OrderedDict
 from dataclasses import dataclass, asdict, field
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 from datetime import datetime
 from packaging import version
 
@@ -25,6 +25,7 @@ class VersionEntry:
     """A single version entry in the index."""
     nixpkgs_commit: str
     commit_timestamp: str
+    store_paths: Optional[Dict[str, str]] = None
 
 
 @dataclass
@@ -55,7 +56,8 @@ class Index:
             for version, version_data in pkg_data.items():
                 pkg_index.versions[version] = VersionEntry(
                     nixpkgs_commit=version_data["nixpkgs_commit"],
-                    commit_timestamp=version_data["commit_timestamp"]
+                    commit_timestamp=version_data["commit_timestamp"],
+                    store_paths=version_data.get("store_paths")
                 )
                 total_versions += 1
             index.pkgs[pkg_name] = pkg_index
@@ -74,7 +76,10 @@ class Index:
             sorted_versions = sorted(pkg_index.versions.keys(), key=version.parse, reverse=True)
             for ver in sorted_versions:
                 entry = pkg_index.versions[ver]
-                data["pkgs"][pkg_name][ver] = asdict(entry)
+                entry_dict = asdict(entry)
+                if entry_dict.get("store_paths") is None:
+                    del entry_dict["store_paths"]
+                data["pkgs"][pkg_name][ver] = entry_dict
                 total_versions += 1
 
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -88,7 +93,8 @@ class Index:
         package: str,
         version: str,
         commit_sha: str,
-        timestamp: str
+        timestamp: str,
+        store_paths: Optional[Dict[str, str]] = None
     ) -> bool:
         """
         Update or add a version entry.
@@ -100,7 +106,8 @@ class Index:
         if version not in self.pkgs[package].versions:
             self.pkgs[package].versions[version] = VersionEntry(
                 nixpkgs_commit=commit_sha,
-                commit_timestamp=timestamp
+                commit_timestamp=timestamp,
+                store_paths=store_paths
             )
             return True
 
@@ -110,7 +117,8 @@ class Index:
             old_commit = existing_entry.nixpkgs_commit
             self.pkgs[package].versions[version] = VersionEntry(
                 nixpkgs_commit=commit_sha,
-                commit_timestamp=timestamp
+                commit_timestamp=timestamp,
+                store_paths=store_paths
             )
             logger.debug(f"Updated: {package}:{version} ({old_commit[:12]} -> {commit_sha[:12]})")
             return True

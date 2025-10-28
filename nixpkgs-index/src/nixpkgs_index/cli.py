@@ -238,11 +238,22 @@ def main(
                 version = repo.evaluate_attribute(attribute)
 
                 if version:
+                    store_paths = None
+                    if config_obj.eval.record_store_paths:
+                        store_paths = {}
+                        for system in config_obj.eval.systems:
+                            store_path = repo.evaluate_attribute_store_path(attribute, system)
+                            if store_path:
+                                store_paths[system] = store_path
+                            else:
+                                logger.warning(f"Failed to get store path for {attribute} on {system}")
+
                     updated = index.update_version(
                         pkg_name,
                         version,
                         commit.sha,
-                        commit.timestamp.isoformat()
+                        commit.timestamp.isoformat(),
+                        store_paths
                     )
 
                     if updated:

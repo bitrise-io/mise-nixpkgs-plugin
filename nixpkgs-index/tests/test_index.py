@@ -231,3 +231,166 @@ class TestIndex:
             assert v24_10_pos < v24_9_pos < v24_5_pos < v22_20_pos < v22_19_pos
         finally:
             output_path.unlink()
+
+
+class TestStorePaths:
+    def test_update_version_with_store_paths(self):
+        index = Index()
+        store_paths = {
+            "x86_64-linux": "/nix/store/abc123...-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456...-ruby-3.3.9"
+        }
+
+        updated = index.update_version(
+            package="ruby",
+            version="3.3.9",
+            commit_sha="commit1",
+            timestamp="2025-01-15T12:00:00+00:00",
+            store_paths=store_paths
+        )
+
+        assert updated is True
+        assert index.pkgs["ruby"].versions["3.3.9"].store_paths == store_paths
+
+    def test_update_version_without_store_paths(self):
+        index = Index()
+
+        updated = index.update_version(
+            package="ruby",
+            version="3.3.9",
+            commit_sha="commit1",
+            timestamp="2025-01-15T12:00:00+00:00"
+        )
+
+        assert updated is True
+        assert index.pkgs["ruby"].versions["3.3.9"].store_paths is None
+
+    def test_version_entry_with_store_paths(self):
+        entry = VersionEntry(
+            nixpkgs_commit="abc123",
+            commit_timestamp="2025-01-15T12:00:00+00:00",
+            store_paths={
+                "x86_64-linux": "/nix/store/path1",
+                "aarch64-darwin": "/nix/store/path2"
+            }
+        )
+
+        assert entry.store_paths is not None
+        assert len(entry.store_paths) == 2
+        assert entry.store_paths["x86_64-linux"] == "/nix/store/path1"
+
+    def test_save_and_load_with_store_paths(self):
+        index1 = Index()
+        store_paths_ruby = {
+            "x86_64-linux": "/nix/store/abc123...-ruby-3.3.9",
+            "aarch64-darwin": "/nix/store/def456...-ruby-3.3.9"
+        }
+        store_paths_python = {
+            "x86_64-linux": "/nix/store/ghi789...-python-3.11.7",
+            "aarch64-darwin": "/nix/store/jkl012...-python-3.11.7"
+        }
+
+        index1.update_version(
+            "ruby", "3.3.9", "commit1", "2025-01-15T12:00:00+00:00",
+            store_paths=store_paths_ruby
+        )
+        index1.update_version(
+            "python", "3.11.7", "commit2", "2025-01-14T12:00:00+00:00",
+            store_paths=store_paths_python
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
+            output_path = Path(f.name)
+
+        try:
+            index1.save(output_path)
+            index2 = Index.load(output_path)
+
+            assert index2.pkgs["ruby"].versions["3.3.9"].store_paths == store_paths_ruby
+            assert index2.pkgs["python"].versions["3.11.7"].store_paths == store_paths_python
+        finally:
+            output_path.unlink()
+
+    def test_save_omits_none_store_paths(self):
+        """Ensure that store_paths field is not written when None."""
+        index = Index()
+        index.update_version(
+            "ruby", "3.3.9", "commit1", "2025-01-15T12:00:00+00:00"
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
+            output_path = Path(f.name)
+
+        try:
+            index.save(output_path)
+            yaml_content = output_path.read_text()
+
+            # Verify store_paths is NOT in the YAML when it's None
+            assert "store_paths:" not in yaml_content
+        finally:
+            output_path.unlink()
+
+    def test_save_includes_store_paths_in_yaml(self):
+        """Ensure that store_paths field is included in YAML when present."""
+        index = Index()
+        store_paths = {"x86_64-linux": "/nix/store/path1"}
+        index.update_version(
+            "ruby", "3.3.9", "commit1", "2025-01-15T12:00:00+00:00",
+            store_paths=store_paths
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
+            output_path = Path(f.name)
+
+        try:
+            index.save(output_path)
+            yaml_content = output_path.read_text()
+
+            # Verify store_paths IS in the YAML when present
+            assert "store_paths:" in yaml_content
+            assert "x86_64-linux:" in yaml_content
+            assert "/nix/store/path1" in yaml_content
+        finally:
+            output_path.unlink()
+
+    def test_update_version_with_store_paths_replaces_on_newer(self):
+        """Test that store_paths are replaced when updating to a newer commit."""
+        index = Index()
+
+        old_store_paths = {"x86_64-linux": "/nix/store/old-path"}
+        new_store_paths = {"x86_64-linux": "/nix/store/new-path"}
+
+        index.update_version(
+            "ruby", "3.3.9", "old_commit", "2025-01-15T12:00:00+00:00",
+            store_paths=old_store_paths
+        )
+        updated = index.update_version(
+            "ruby", "3.3.9", "new_commit", "2025-01-16T12:00:00+00:00",
+            store_paths=new_store_paths
+        )
+
+        assert updated is True
+        assert index.pkgs["ruby"].versions["3.3.9"].store_paths == new_store_paths
+
+    def test_mixed_entries_with_and_without_store_paths(self):
+        """Test that index can handle mix of entries with and without store_paths."""
+        index = Index()
+
+        index.update_version("ruby", "3.3.9", "c1", "2025-01-15T12:00:00+00:00")
+        index.update_version(
+            "ruby", "3.3.8", "c2", "2025-01-14T12:00:00+00:00",
+            store_paths={"x86_64-linux": "/nix/store/path1"}
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
+            output_path = Path(f.name)
+
+        try:
+            index.save(output_path)
+            index2 = Index.load(output_path)
+
+            assert index2.pkgs["ruby"].versions["3.3.9"].store_paths is None
+            assert index2.pkgs["ruby"].versions["3.3.8"].store_paths is not None
+            assert index2.pkgs["ruby"].versions["3.3.8"].store_paths["x86_64-linux"] == "/nix/store/path1"
+        finally:
+            output_path.unlink()

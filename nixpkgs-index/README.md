@@ -21,9 +21,12 @@ pkgs:
     "3.3.8":
       nixpkgs_commit: abc123def456789...
       commit_timestamp: 2024-06-08T10:00:00Z
+      store_paths:  # Optional, only when record_store_paths is enabled
+        x86_64-linux: /nix/store/abc123...-ruby-3.3.8
+        aarch64-darwin: /nix/store/def456...-ruby-3.3.8
 ```
 
-Now you can instantly fetch Ruby 3.3.8 by pointing nixpkgs to commit `abc123def456789...`
+Now you can instantly fetch Ruby 3.3.8 by pointing nixpkgs to commit `abc123def456789...`, or optionally fetch it directly from a binary cache using the store path.
 
 ## Getting Started
 
@@ -64,20 +67,28 @@ Now you can instantly fetch Ruby 3.3.8 by pointing nixpkgs to commit `abc123def4
       # For example, when "ruby" was at 3.2.x, "ruby_3_1" might have been at 3.1.7
       # - evaluating only "ruby" would miss 3.1.{4,5,6,7} from that time period
       nixpkgs_attributes:
-        - ruby           
-        - ruby_3_4       
-        - ruby_3_3       
-        - ruby_3_2       
-        - ruby_3_1       
+        - ruby
+        - ruby_3_4
+        - ruby_3_3
+        - ruby_3_2
+        - ruby_3_1
 
     python:
       # Another package with its own version branches
       nixpkgs_attributes:
-        - python3  
+        - python3
         - python313
         - python312
         - python311
         - python310
+
+  # Optional: Record store paths for each system
+  # This allows fetching packages directly from a binary cache without re-evaluating nixpkgs
+  eval:
+    record_store_paths: true
+    systems:
+      - x86_64-linux
+      - aarch64-darwin
   ```
 
 4. **Run the indexer**:
@@ -182,9 +193,9 @@ uv run pytest
 
 ### TODO and Future Work
 
+- [x] Evaluate store objects and store them per-system in the index
+- [ ] Optimize the commit update by comparing the old vs. new store objects and only update the commit hash if the store object changed (if not, nothing relevant changed for that package/version)
 - [ ] Split the index file per package for easier diffs
-- [ ] Evaluate store objects and store them per-system in the index
-- [ ] Once the above is done, optimize the commit update by comparing the old vs. new store objects and only update the commit hash if the store object changed (if not, nothing relevant changed for that package/version)
 
 
 ## Troubleshooting

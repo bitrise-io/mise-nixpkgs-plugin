@@ -3,7 +3,7 @@
 import yaml
 import logging
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List
 
 logger = logging.getLogger(__name__)
@@ -16,10 +16,18 @@ class PackageConfig:
 
 
 @dataclass
+class EvalConfig:
+    """Evaluation settings configuration."""
+    record_store_paths: bool = False
+    systems: List[str] = field(default_factory=list)
+
+
+@dataclass
 class Config:
     """Main configuration structure."""
     branch: str
     pkgs: Dict[str, PackageConfig]
+    eval: EvalConfig = field(default_factory=EvalConfig)
 
     @classmethod
     def load(cls, path: Path) -> "Config":
@@ -42,4 +50,13 @@ class Config:
             pkgs[pkg_name] = PackageConfig(nixpkgs_attributes=attributes)
 
         logger.info(f"Loaded config with {len(pkgs)} packages")
-        return cls(branch=branch, pkgs=pkgs)
+
+        eval_data = data.get("eval", {})
+        record_store_paths = eval_data.get("record_store_paths", False)
+        systems = eval_data.get("systems", [])
+        eval_config = EvalConfig(record_store_paths=record_store_paths, systems=systems)
+
+        if record_store_paths:
+            logger.info(f"Store paths recording enabled for systems: {', '.join(systems)}")
+
+        return cls(branch=branch, pkgs=pkgs, eval=eval_config)
