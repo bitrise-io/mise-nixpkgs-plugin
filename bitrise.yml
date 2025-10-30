@@ -24,7 +24,7 @@ step_bundles:
         - content: |-
             set -eo pipefail
             cd nixpkgs-index
-            mise exec uv run nixpkgs-index validate --config example-config.yml --index nixpkgs-index.yml
+            mise exec -- uv run nixpkgs-index validate --config example-config.yml --index nixpkgs-index.yml
 
 workflows:
   primary:
