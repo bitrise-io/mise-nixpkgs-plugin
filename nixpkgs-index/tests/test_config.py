@@ -17,6 +17,18 @@ class TestPackageConfig:
         config = PackageConfig(nixpkgs_attributes=[])
         assert config.nixpkgs_attributes == []
 
+    def test_package_config_with_tests(self):
+        attrs = ["ruby"]
+        tests = ["ruby --version | grep $VERSION"]
+        config = PackageConfig(nixpkgs_attributes=attrs, tests=tests)
+
+        assert config.nixpkgs_attributes == attrs
+        assert config.tests == tests
+
+    def test_package_config_tests_default_empty(self):
+        config = PackageConfig(nixpkgs_attributes=["ruby"])
+        assert config.tests == []
+
 
 class TestConfig:
     def test_load_valid_config(self):
@@ -181,6 +193,65 @@ pkgs:
         try:
             config = Config.load(config_path)
             assert config.pkgs["ruby"].nixpkgs_attributes == []
+        finally:
+            config_path.unlink()
+
+    def test_config_with_tests_field(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("""
+branch: nixpkgs-unstable
+pkgs:
+  ruby:
+    nixpkgs_attributes:
+      - ruby
+    tests:
+      - ruby --version | grep $VERSION
+""")
+            f.flush()
+            config_path = Path(f.name)
+
+        try:
+            config = Config.load(config_path)
+            assert config.pkgs["ruby"].tests == ["ruby --version | grep $VERSION"]
+        finally:
+            config_path.unlink()
+
+    def test_config_with_multiple_tests(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("""
+branch: nixpkgs-unstable
+pkgs:
+  python:
+    nixpkgs_attributes:
+      - python3
+    tests:
+      - python --version
+      - python -c "import sys; print(sys.version)"
+""")
+            f.flush()
+            config_path = Path(f.name)
+
+        try:
+            config = Config.load(config_path)
+            assert len(config.pkgs["python"].tests) == 2
+        finally:
+            config_path.unlink()
+
+    def test_config_without_tests_field(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write("""
+branch: nixpkgs-unstable
+pkgs:
+  ruby:
+    nixpkgs_attributes:
+      - ruby
+""")
+            f.flush()
+            config_path = Path(f.name)
+
+        try:
+            config = Config.load(config_path)
+            assert config.pkgs["ruby"].tests == []
         finally:
             config_path.unlink()
 

@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-nixpkgs-index = "nixpkgs_index.cli:main"
+nixpkgs-index = "nixpkgs_index.cli:cli"
 
 [dependency-groups]
 dev = [
