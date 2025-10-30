@@ -17,6 +17,8 @@ pkgs:
       - ruby_3_3
       - ruby_3_2
       - ruby_3_1
+    tests:
+      - ruby --version | grep $VERSION
 
   python:
     nixpkgs_attributes:
@@ -25,6 +27,8 @@ pkgs:
       - python312
       - python311
       - python310
+    tests:
+      - python --version | grep $VERSION
 
   node:
     nixpkgs_attributes:
@@ -33,3 +37,5 @@ pkgs:
       - nodejs_22
       - nodejs_20
       - nodejs_18
+    tests:
+      - node --version | grep $VERSION

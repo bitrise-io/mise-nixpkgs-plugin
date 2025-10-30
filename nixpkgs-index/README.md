@@ -100,8 +100,13 @@ The tool will discover commits at the specified intervals, evaluate your configu
 
 ## Usage
 
+The tool provides two subcommands: `index` and `validate`.
 
-### Options
+### Index Command
+
+**Description:** Index package versions across nixpkgs commits.
+
+**Options:**
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
@@ -114,23 +119,91 @@ The tool will discover commits at the specified intervals, evaluate your configu
 | `--max-steps N` | No | - | Maximum number of commits to evaluate |
 | `-v, --verbose` | No | - | Increase verbosity (-v for INFO, -vv for DEBUG) |
 
-### Examples
+**Examples:**
 
 **Index the last 30 days at 1-day intervals:**
 ```bash
-uv run nixpkgs-index --config config.yml --output index.yml \
+uv run nixpkgs-index index --config config.yml --output index.yml \
   --since 2025-09-26T00:00:00Z --step-interval 1d
 ```
 
 **Index the last 100 commits only:**
 ```bash
-uv run nixpkgs-index --config config.yml --output index.yml --max-steps 100
+uv run nixpkgs-index index --config config.yml --output index.yml --max-steps 100
 ```
 
 **Use larger intervals for faster indexing:**
 ```bash
-uv run nixpkgs-index --config config.yml --output index.yml --step-interval 7d
+uv run nixpkgs-index index --config config.yml --output index.yml --step-interval 7d
 ```
+
+### Validate Command
+
+**Description:** Validate index integrity and package correctness.
+
+**Purpose:** After indexing, validate that:
+1. All indexed store paths can be fetched from substituters (binary caches)
+2. Packages pass their configured tests against the indexed artifacts
+
+**Options:**
+
+| Option | Required | Default | Description |
+|--------|----------|---------|-------------|
+| `--config PATH` | Yes | - | Path to configuration YAML file (same as used for indexing) |
+| `--index PATH` | Yes | - | Path to the index YAML file to validate |
+| `--target TEXT` | No | - | Validate only a specific package version (format: `package@version`, e.g., `node@24.10.0`) |
+| `-v, --verbose` | No | - | Increase verbosity (-v for INFO, -vv for DEBUG) |
+
+**Validation checks:**
+
+1. **Store path validation**: Uses `nix build --option max-jobs 0 --no-link <store-path>`
+   - Verifies each indexed store path can be fetched from configured substituters
+   - Ensures reproducibility - the exact artifacts are still available
+   - Runs for all systems in the index
+
+2. **Config tests**: Uses `nix shell <store-path> -c bash -c <test-commands>`
+   - Runs tests defined in the config against indexed store paths
+   - Tests the actual indexed artifacts (not fresh builds from nixpkgs)
+   - Runs only for the current system (CI can run on multiple systems independently)
+   - Supports `$VERSION` placeholder in test commands
+
+**Examples:**
+
+**Validate the entire index:**
+```bash
+uv run nixpkgs-index validate --config config.yml --index index.yml
+```
+
+**Validate only a specific package version (faster iteration during development):**
+```bash
+uv run nixpkgs-index validate --config config.yml --index index.yml --target node@24.10.0
+```
+
+### Configuration File Format
+
+The config file supports optional `tests` field for validation:
+
+```yaml
+branch: nixpkgs-unstable
+
+eval:
+  record_store_paths: true
+  systems:
+    - x86_64-linux
+    - aarch64-darwin
+
+pkgs:
+  ruby:
+    nixpkgs_attributes:
+      - ruby
+      - ruby_3_4
+      - ruby_3_3
+    # Optional: Tests to run during validation
+    tests:
+      - ruby --version | grep $VERSION
+```
+
+**Note:** `tests` field is optional. If provided, validation will run these tests against indexed store paths. The `$VERSION` placeholder is replaced with the actual package version.
 
 ## How It Works
 

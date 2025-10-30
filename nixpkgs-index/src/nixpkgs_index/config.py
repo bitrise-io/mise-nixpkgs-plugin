@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class PackageConfigDict(TypedDict, total=False):
     nixpkgs_attributes: List[str]
+    tests: List[str]
 
 
 class EvalConfigDict(TypedDict, total=False):
@@ -36,6 +37,7 @@ class PackageConfig:
     """Configuration for a single package."""
 
     nixpkgs_attributes: List[str]
+    tests: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -77,8 +79,11 @@ class Config:
         pkgs = {}
         for pkg_name, pkg_data in parsed.pkgs.items():
             attributes = pkg_data.get("nixpkgs_attributes", [])
-            logger.debug(f"Package '{pkg_name}': {len(attributes)} attributes")
-            pkgs[pkg_name] = PackageConfig(nixpkgs_attributes=attributes)
+            tests = pkg_data.get("tests", [])
+            logger.debug(
+                f"Package '{pkg_name}': {len(attributes)} attributes, {len(tests)} tests"
+            )
+            pkgs[pkg_name] = PackageConfig(nixpkgs_attributes=attributes, tests=tests)
 
         logger.info(f"Loaded config with {len(pkgs)} packages")
 
