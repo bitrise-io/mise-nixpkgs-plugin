@@ -9,6 +9,25 @@ tools:
 tool_config:
   provider: mise
 
+pipelines:
+  validate-index:
+    workflows:
+      validate-index-mac: {}
+      validate-index-linux: {}
+
+step_bundles:
+  validate-index:
+    steps:
+    - script@1:
+        title: Validate index
+        inputs:
+        - content: |-
+            set -eo pipefail
+            cd nixpkgs-index
+            eval "$(mise activate)"
+            mise install
+            uv run nixpkgs-index validate --config example-config.yml --index nixpkgs-index.yml
+
 workflows:
   primary:
     triggers:
@@ -54,6 +73,22 @@ workflows:
 
             mise run test
     - deploy-to-bitrise-io@2: {}
+  validate-index-mac:
+    meta:
+      bitrise.io:
+        stack: osx-xcode-edge
+        machine_type_id: g2.mac.large
+    steps:
+    - git-clone@8: {}
+    - bundle::validate-index: {}
+  validate-index-linux:
+    meta:
+      bitrise.io:
+        stack: ubuntu-noble-24.04-bitrise-2025-android
+        machine_type_id: g2.linux.large
+    steps:
+    - git-clone@8: {}
+    - bundle::validate-index: {}
 meta:
   bitrise.io:
     stack: osx-xcode-26.1.x-edge
