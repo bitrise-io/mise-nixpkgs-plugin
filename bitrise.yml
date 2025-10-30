@@ -42,6 +42,7 @@ step_bundles:
         - content: |-
             set -eo pipefail
             cd nixpkgs-index
+            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
             mise exec uv -- uv run nixpkgs-index validate --config example-config.yml --index nixpkgs-index.yml
 
 workflows:
