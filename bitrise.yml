@@ -81,6 +81,7 @@ workflows:
         machine_type_id: g2.mac.large
     steps:
     - git-clone@8: {}
+    - bundle::install-nix: {}
     - bundle::validate-index: {}
   validate-index-linux:
     meta:
@@ -89,6 +90,7 @@ workflows:
         machine_type_id: g2.linux.large
     steps:
     - git-clone@8: {}
+    - bundle::install-nix: {}
     - bundle::validate-index: {}
 meta:
   bitrise.io:
