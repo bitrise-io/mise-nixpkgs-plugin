@@ -3,6 +3,11 @@ format_version: '23'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 
+meta:
+  bitrise.io:
+    stack: ubuntu-noble-24.04-bitrise-2025-android
+    machine_type_id: g2.linux.large
+
 # Trigger toolsetup just to have mise in $PATH
 tools:
   nodejs: 22:installed
@@ -150,7 +155,3 @@ workflows:
     - git-clone@8: {}
     - bundle::install-nix: {}
     - bundle::create-index-update-pr: {}
-meta:
-  bitrise.io:
-    stack: osx-xcode-26.1.x-edge
-    machine_type_id: g2.mac.large
