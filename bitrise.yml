@@ -21,6 +21,9 @@ tool_config:
 
 pipelines:
   validate-index:
+    triggers:
+      pull_request:
+      - changed_files: nixpkgs-index.json
     workflows:
       validate-index-mac: {}
       validate-index-linux: {}
@@ -56,7 +59,6 @@ step_bundles:
               uv run nixpkgs-index validate \
                 --config $INDEX_CONFIG_PATH \
                 --index $INDEX_PATH
-                --format json
   create-index-update-pr:
     steps:
     - script@1:
@@ -64,7 +66,7 @@ step_bundles:
         inputs:
         - content: |-
             #!/bin/bash
-            set -ex
+            set -e
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
             export GITHUB_TOKEN=$GITHUB_API_TOKEN
             mise exec --cd nixpkgs-index uv -- uv run nixpkgs-index index \
@@ -78,10 +80,9 @@ step_bundles:
         inputs:
         - content: |-
             #!/bin/bash
-            set -e
-            cd nixpkgs-index
+            set -ex
 
-            if git diff --quiet nixpkgs-index.yml; then
+            if git diff --quiet $INDEX_PATH; then
               echo "No changes detected in index file"
               exit 0
             fi
@@ -96,8 +97,8 @@ step_bundles:
 
             BRANCH_NAME="nixpkgs-index-update-$(date -u +%Y%m%d-%H%M%S)"
             git checkout -b "$BRANCH_NAME"
-            git add nixpkgs-index.yml
-            git commit -m "chore: update nixpkgs index" -m "Automated index update from nixpkgs latest commits."
+            git add $INDEX_PATH
+            git commit -m "Automated index update from nixpkgs latest commits."
             
             REPO_URL=$(git config --get remote.origin.url)
             # Remove https:// prefix if present
@@ -105,7 +106,7 @@ step_bundles:
             git push "https://${GITHUB_INDEX_UPDATER_TOKEN}@${REPO_URL}" "$BRANCH_NAME"
 
             GH_TOKEN="$GITHUB_INDEX_UPDATER_TOKEN" gh pr create \
-              --title "Scheduled nixpkgs index update: $(date -u +%Y%m%d-%H%M%S)" \
+              --title "Scheduled nixpkgs index update: $(date -u +%Y-%m-%d)" \
               --body "Automated incremental update of the nixpkgs index with latest package versions." \
               --head "$BRANCH_NAME" \
               --base main
