@@ -3,7 +3,7 @@
     "ruby": {
       "3.3.9": {
         "aarch64-darwin": "/nix/store/1bkgcsf7qfk2pbi3a1pnd8q1vlz2zk3q-ruby-3.3.9",
-        "x86_64-linux": "/nix/store/..."
+        "x86_64-linux": "/nix/store/q750w1gafsy19hj0k9mnqj9a2nd5bj3z-ruby-3.3.9"
       }
     },
     "python": {
