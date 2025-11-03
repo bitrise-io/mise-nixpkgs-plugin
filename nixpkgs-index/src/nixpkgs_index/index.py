@@ -1,11 +1,12 @@
 """Index file management."""
 
 import yaml
+import json
 import logging
 from pathlib import Path
 from collections import OrderedDict
 from dataclasses import dataclass, asdict, field
-from typing import Dict, Optional, Any, TypedDict, NotRequired, Required, cast
+from typing import Dict, Optional, Any, TypedDict, NotRequired, Required, cast, Literal
 from datetime import datetime
 from packaging import version
 
@@ -65,14 +66,30 @@ class Index:
     pkgs: Dict[str, PackageIndex] = field(default_factory=OrderedDict)
 
     @classmethod
-    def load(cls, path: Path) -> "Index":
-        """Load index from a YAML file, or create empty if it doesn't exist."""
+    def load(cls, path: Path, format: Optional[Literal["yml", "json"]] = None) -> "Index":
+        """Load index from a file (yml or json), or create empty if it doesn't exist.
+
+        If format is not specified, it will be auto-detected from the file extension.
+        """
         if not path.exists():
             logger.debug(f"Index file doesn't exist, creating new")
             return cls()
 
+        # Auto-detect format from file extension if not specified
+        if format is None:
+            ext = path.suffix.lower()
+            if ext == ".json":
+                format = "json"
+            elif ext in (".yaml", ".yml"):
+                format = "yml"
+            else:
+                format = "yml"
+
         with open(path) as f:
-            raw_data = yaml.safe_load(f) or {}
+            if format == "json":
+                raw_data = json.load(f) or {}
+            else:
+                raw_data = yaml.safe_load(f) or {}
 
         data = cast(IndexDict, raw_data)
 
@@ -109,8 +126,8 @@ class Index:
         )
         return index
 
-    def save(self, path: Path) -> None:
-        """Save index to a YAML file."""
+    def save(self, path: Path, format: Literal["yml", "json"] = "yml") -> None:
+        """Save index to a file in the specified format (yml or json)."""
         data = {"pkgs": OrderedDict()}
         total_versions = 0
         for pkg_name in sorted(self.pkgs.keys()):
@@ -128,11 +145,16 @@ class Index:
                 total_versions += 1
 
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w") as f:
-            yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+
+        if format == "json":
+            with open(path, "w") as f:
+                json.dump(data, f, indent=2)
+        else:
+            with open(path, "w") as f:
+                yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 
         logger.debug(
-            f"Saved index: {len(self.pkgs)} packages, {total_versions} versions"
+            f"Saved index ({format.upper()}): {len(self.pkgs)} packages, {total_versions} versions"
         )
 
     def update_version(

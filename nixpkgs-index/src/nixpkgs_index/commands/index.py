@@ -30,7 +30,13 @@ logger = logging.getLogger(__name__)
     type=click.Path(),
     required=True,
     default="nixpkgs-index.yaml",
-    help="Path to the output index YAML file",
+    help="Path to the output index file",
+)
+@click.option(
+    "--format",
+    type=click.Choice(["yml", "json"], case_sensitive=False),
+    default="yml",
+    help="Output format for the index file (yml or json)",
 )
 @click.option(
     "--nixpkgs-path",
@@ -65,6 +71,7 @@ logger = logging.getLogger(__name__)
 def index(
     config: str,
     output: str,
+    format: str,
     nixpkgs_path: str,
     since: Optional[str],
     until: Optional[str],
@@ -75,6 +82,30 @@ def index(
     """Index package versions across nixpkgs commits."""
 
     setup_logging(verbosity)
+
+    format = format.lower()
+
+    # Validate format consistency with output file extension
+    output_path = Path(output)
+    output_ext = output_path.suffix.lower()
+
+    if output_ext in (".yaml", ".yml"):
+        if format != "yml":
+            raise click.UsageError(
+                f"Output file extension '{output_ext}' does not match format '{format}'. "
+                f"Use a .json file for JSON format or .yaml/.yml for YML format."
+            )
+    elif output_ext == ".json":
+        if format != "json":
+            raise click.UsageError(
+                f"Output file extension '{output_ext}' does not match format '{format}'. "
+                f"Use a .json file for JSON format or .yaml/.yml for YML format."
+            )
+    else:
+        raise click.UsageError(
+            f"Unsupported output file extension '{output_ext}'. "
+            f"Use .yaml, .yml, or .json."
+        )
 
     # Load environment variables from .env file if present
     load_dotenv()
@@ -220,7 +251,7 @@ def index(
                 else:
                     logger.debug(f"  [{pkg_name}] {attribute}=<failed to evaluate>")
 
-        index_obj.save(output_path)
+        index_obj.save(output_path, format=format)
         total_versions = sum(len(pkg.versions) for pkg in index_obj.pkgs.values())
         logger.info(
             f"Commit complete: {commit_updates} new versions, total index: {total_versions}"
