@@ -56,6 +56,7 @@ step_bundles:
               uv run nixpkgs-index validate \
                 --config $INDEX_CONFIG_PATH \
                 --index $INDEX_PATH
+                --format json
   create-index-update-pr:
     steps:
     - script@1:
@@ -69,6 +70,7 @@ step_bundles:
             mise exec --cd nixpkgs-index uv -- uv run nixpkgs-index index \
               --config $INDEX_CONFIG_PATH \
               --output $INDEX_PATH \
+              --format json \
               --step-interval 1d \
               --max-steps 7
     - script@1:
