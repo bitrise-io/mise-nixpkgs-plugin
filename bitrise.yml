@@ -9,6 +9,42 @@ tools:
 tool_config:
   provider: mise
 
+pipelines:
+  validate-index:
+    workflows:
+      validate-index-mac: {}
+      validate-index-linux: {}
+
+step_bundles:
+  install-nix:
+    steps:
+    - script@1:
+        title: Install Nix
+        # TODO: temporary until stacks have Nix preinstalled
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -eo pipefail
+
+            export NIX_INSTALLER_NO_CONFIRM=true
+            export NIX_INSTALLER_ENABLE_FLAKES=true
+            curl -sSf -L https://install.lix.systems/lix | sh -s -- install
+
+            echo "access-tokens = github.com=$NIX_GITHUB_TOKEN" | sudo tee -a /etc/nix/nix.conf
+
+            # Reload daemon after nix.conf file changes
+            sudo launchctl kickstart -k system/org.nixos.nix-daemon || true
+  validate-index:
+    steps:
+    - script@1:
+        title: Validate index
+        inputs:
+        - content: |-
+            set -eo pipefail
+            cd nixpkgs-index
+            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+            mise exec uv -- uv run nixpkgs-index validate --config example-config.yml --index nixpkgs-index.yml
+
 workflows:
   primary:
     triggers:
@@ -27,22 +63,7 @@ workflows:
         title: Lint
         inputs:
         - content: mise run lint
-    - script@1:
-        title: Install Nix
-        # TODO: temporary until stacks have Nix preinstalled
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -eo pipefail
-
-            export NIX_INSTALLER_NO_CONFIRM=true
-            export NIX_INSTALLER_ENABLE_FLAKES=true
-            curl -sSf -L https://install.lix.systems/lix | sh -s -- install
-
-            echo "access-tokens = github.com=$NIX_GITHUB_TOKEN" | sudo tee -a /etc/nix/nix.conf
-
-            # Reload daemon after nix.conf file changes
-            sudo launchctl kickstart -k system/org.nixos.nix-daemon || true
+    - bundle::install-nix: {}
     - script@1:
         title: Basic plugin test
         inputs:
@@ -54,6 +75,24 @@ workflows:
 
             mise run test
     - deploy-to-bitrise-io@2: {}
+  validate-index-mac:
+    meta:
+      bitrise.io:
+        stack: osx-xcode-edge
+        machine_type_id: g2.mac.large
+    steps:
+    - git-clone@8: {}
+    - bundle::install-nix: {}
+    - bundle::validate-index: {}
+  validate-index-linux:
+    meta:
+      bitrise.io:
+        stack: ubuntu-noble-24.04-bitrise-2025-android
+        machine_type_id: g2.linux.large
+    steps:
+    - git-clone@8: {}
+    - bundle::install-nix: {}
+    - bundle::validate-index: {}
 meta:
   bitrise.io:
     stack: osx-xcode-26.1.x-edge
