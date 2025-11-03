@@ -48,7 +48,7 @@ class NixpkgsRepo:
         )
 
         subprocess.run(
-            ["git", "sparse-checkout", "set", "pkgs", "lib"],
+            ["git", "sparse-checkout", "set", "pkgs", "lib", "maintainers"],
             cwd=self.repo_path,
             check=True,
             capture_output=True,

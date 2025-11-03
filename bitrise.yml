@@ -3,6 +3,11 @@ format_version: '23'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 
+meta:
+  bitrise.io:
+    stack: ubuntu-noble-24.04-bitrise-2025-android
+    machine_type_id: g2.linux.large
+
 # Trigger toolsetup just to have mise in $PATH
 tools:
   nodejs: 22:installed
@@ -44,6 +49,58 @@ step_bundles:
             cd nixpkgs-index
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
             mise exec uv -- uv run nixpkgs-index validate --config example-config.yml --index nixpkgs-index.yml
+  create-index-update-pr:
+    steps:
+    - script@1:
+        title: Run incremental index update
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            cd nixpkgs-index
+            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+            export GITHUB_TOKEN=$GITHUB_API_TOKEN
+            mise exec uv -- uv run nixpkgs-index index \
+              --config example-config.yml \
+              --output nixpkgs-index.yml \
+              --step-interval 1d \
+              --max-steps 7
+    - script@1:
+        title: Create PR if index changed
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+            cd nixpkgs-index
+
+            if git diff --quiet nixpkgs-index.yml; then
+              echo "No changes detected in index file"
+              exit 0
+            fi
+
+            echo "Changes detected in index file"
+
+            if [ -z "$GITHUB_INDEX_UPDATER_TOKEN" ]; then
+              echo "ERROR: GITHUB_INDEX_UPDATER_TOKEN environment variable not set"
+              echo "Please add GITHUB_INDEX_UPDATER_TOKEN to Bitrise secrets"
+              exit 1
+            fi
+
+            BRANCH_NAME="nixpkgs-index-update-$(date -u +%Y%m%d-%H%M%S)"
+            git checkout -b "$BRANCH_NAME"
+            git add nixpkgs-index.yml
+            git commit -m "chore: update nixpkgs index" -m "Automated index update from nixpkgs latest commits."
+            
+            REPO_URL=$(git config --get remote.origin.url)
+            # Remove https:// prefix if present
+            REPO_URL=$(echo "$REPO_URL" | sed 's/https:\/\///')
+            git push "https://${GITHUB_INDEX_UPDATER_TOKEN}@${REPO_URL}" "$BRANCH_NAME"
+
+            GH_TOKEN="$GITHUB_INDEX_UPDATER_TOKEN" gh pr create \
+              --title "Scheduled nixpkgs index update: $(date -u +%Y%m%d-%H%M%S)" \
+              --body "Automated incremental update of the nixpkgs index with latest package versions." \
+              --head "$BRANCH_NAME" \
+              --base main
 
 workflows:
   primary:
@@ -93,7 +150,8 @@ workflows:
     - git-clone@8: {}
     - bundle::install-nix: {}
     - bundle::validate-index: {}
-meta:
-  bitrise.io:
-    stack: osx-xcode-26.1.x-edge
-    machine_type_id: g2.mac.large
+  scheduled-index-update:
+    steps:
+    - git-clone@8: {}
+    - bundle::install-nix: {}
+    - bundle::create-index-update-pr: {}
