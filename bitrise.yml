@@ -3,6 +3,11 @@ format_version: '23'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 
+app:
+  envs:
+    - INDEX_CONFIG_PATH: $BITRISE_SOURCE_DIR/nixpkgs-index-config.yml
+    - INDEX_PATH: $BITRISE_SOURCE_DIR/nixpkgs-index.json
+
 meta:
   bitrise.io:
     stack: ubuntu-noble-24.04-bitrise-2025-android
@@ -16,6 +21,10 @@ tool_config:
 
 pipelines:
   validate-index:
+    status_report_name: Validate nixpkgs index
+    triggers:
+      pull_request:
+      - changed_files: nixpkgs-index.json
     workflows:
       validate-index-mac: {}
       validate-index-linux: {}
@@ -46,9 +55,11 @@ step_bundles:
         inputs:
         - content: |-
             set -eo pipefail
-            cd nixpkgs-index
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-            mise exec uv -- uv run nixpkgs-index validate --config example-config.yml --index nixpkgs-index.yml
+            mise exec --cd nixpkgs-index uv -- \
+              uv run nixpkgs-index validate \
+                --config $INDEX_CONFIG_PATH \
+                --index $INDEX_PATH
   create-index-update-pr:
     steps:
     - script@1:
@@ -56,13 +67,13 @@ step_bundles:
         inputs:
         - content: |-
             #!/bin/bash
-            set -ex
-            cd nixpkgs-index
+            set -e
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
             export GITHUB_TOKEN=$GITHUB_API_TOKEN
-            mise exec uv -- uv run nixpkgs-index index \
-              --config example-config.yml \
-              --output nixpkgs-index.yml \
+            mise exec --cd nixpkgs-index uv -- uv run nixpkgs-index index \
+              --config $INDEX_CONFIG_PATH \
+              --output $INDEX_PATH \
+              --format json \
               --step-interval 1d \
               --max-steps 7
     - script@1:
@@ -70,10 +81,9 @@ step_bundles:
         inputs:
         - content: |-
             #!/bin/bash
-            set -e
-            cd nixpkgs-index
+            set -ex
 
-            if git diff --quiet nixpkgs-index.yml; then
+            if git diff --quiet $INDEX_PATH; then
               echo "No changes detected in index file"
               exit 0
             fi
@@ -88,8 +98,8 @@ step_bundles:
 
             BRANCH_NAME="nixpkgs-index-update-$(date -u +%Y%m%d-%H%M%S)"
             git checkout -b "$BRANCH_NAME"
-            git add nixpkgs-index.yml
-            git commit -m "chore: update nixpkgs index" -m "Automated index update from nixpkgs latest commits."
+            git add $INDEX_PATH
+            git commit -m "Automated index update from nixpkgs latest commits."
             
             REPO_URL=$(git config --get remote.origin.url)
             # Remove https:// prefix if present
@@ -97,7 +107,7 @@ step_bundles:
             git push "https://${GITHUB_INDEX_UPDATER_TOKEN}@${REPO_URL}" "$BRANCH_NAME"
 
             GH_TOKEN="$GITHUB_INDEX_UPDATER_TOKEN" gh pr create \
-              --title "Scheduled nixpkgs index update: $(date -u +%Y%m%d-%H%M%S)" \
+              --title "Scheduled nixpkgs index update: $(date -u +%Y-%m-%d)" \
               --body "Automated incremental update of the nixpkgs index with latest package versions." \
               --head "$BRANCH_NAME" \
               --base main
