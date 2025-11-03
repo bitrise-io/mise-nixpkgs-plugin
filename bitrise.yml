@@ -5,8 +5,8 @@ project_type: other
 
 app:
   envs:
-    - INDEX_CONFIG_PATH: nixpkgs-index-config.yml
-    - INDEX_PATH: nixpkgs-index.json
+    - INDEX_CONFIG_PATH: $BITRISE_SOURCE_DIR/nixpkgs-index-config.yml
+    - INDEX_PATH: $BITRISE_SOURCE_DIR/nixpkgs-index.json
 
 meta:
   bitrise.io:
