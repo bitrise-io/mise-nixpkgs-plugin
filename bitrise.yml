@@ -3,6 +3,11 @@ format_version: '23'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 
+app:
+  envs:
+    - INDEX_CONFIG_PATH: nixpkgs-index-config.yml
+    - INDEX_PATH: nixpkgs-index.json
+
 meta:
   bitrise.io:
     stack: ubuntu-noble-24.04-bitrise-2025-android
@@ -46,9 +51,11 @@ step_bundles:
         inputs:
         - content: |-
             set -eo pipefail
-            cd nixpkgs-index
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-            mise exec uv -- uv run nixpkgs-index validate --config example-config.yml --index nixpkgs-index.yml
+            mise exec --cd nixpkgs-index uv -- \
+              uv run nixpkgs-index validate \
+                --config $INDEX_CONFIG_PATH \
+                --index $INDEX_PATH
   create-index-update-pr:
     steps:
     - script@1:
@@ -57,12 +64,11 @@ step_bundles:
         - content: |-
             #!/bin/bash
             set -ex
-            cd nixpkgs-index
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
             export GITHUB_TOKEN=$GITHUB_API_TOKEN
-            mise exec uv -- uv run nixpkgs-index index \
-              --config example-config.yml \
-              --output nixpkgs-index.yml \
+            mise exec --cd nixpkgs-index uv -- uv run nixpkgs-index index \
+              --config $INDEX_CONFIG_PATH \
+              --output $INDEX_PATH \
               --step-interval 1d \
               --max-steps 7
     - script@1:
@@ -111,11 +117,11 @@ workflows:
         - source_branch: "*"
     steps:
     - git-clone@8: {}
-    - script@1:
-        title: Upgrade mise
-        # TODO: temporary until we ship a more recent mise version with full Lua support
-        inputs:
-        - content: mise self-update
+    # - script@1:
+    #     title: Upgrade mise
+    #     # TODO: temporary until we ship a more recent mise version with full Lua support
+    #     inputs:
+    #     - content: mise self-update
     - script@1:
         title: Lint
         inputs:
