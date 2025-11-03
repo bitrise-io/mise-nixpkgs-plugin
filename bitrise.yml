@@ -54,6 +54,7 @@ step_bundles:
             set -ex
             cd nixpkgs-index
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+            export GITHUB_TOKEN=$GITHUB_API_TOKEN
             mise exec uv -- uv run nixpkgs-index index \
               --config example-config.yml \
               --output nixpkgs-index.yml \
