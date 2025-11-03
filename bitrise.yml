@@ -83,10 +83,13 @@ step_bundles:
 
             BRANCH_NAME="nixpkgs-index-update-$(date -u +%Y%m%d-%H%M%S)"
             git checkout -b "$BRANCH_NAME"
-
             git add nixpkgs-index.yml
             git commit -m "chore: update nixpkgs index" -m "Automated index update from nixpkgs latest commits."
-            git push origin "$BRANCH_NAME"
+            
+            REPO_URL=$(git config --get remote.origin.url)
+            # Remove https:// prefix if present
+            REPO_URL=$(echo "$REPO_URL" | sed 's/https:\/\///')
+            git push "https://${GITHUB_INDEX_UPDATER_TOKEN}@${REPO_URL}" "$BRANCH_NAME"
 
             GH_TOKEN="$GITHUB_INDEX_UPDATER_TOKEN" gh pr create \
               --title "Scheduled nixpkgs index update: $(date -u +%Y%m%d-%H%M%S)" \
