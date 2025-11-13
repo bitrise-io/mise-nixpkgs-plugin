@@ -24,10 +24,10 @@ function PLUGIN:BackendInstall(ctx)
     local mapping = nixpkgs_mapping.parse_mapping_file()
     local nix_system_string = nix.current_system()
     if
-        not mapping.packages
-        or not mapping.packages[tool]
-        or not mapping.packages[tool][version]
-        or not mapping.packages[tool][version][nix_system_string]
+        not mapping.pkgs
+        or not mapping.pkgs[tool]
+        or not mapping.pkgs[tool][version]
+        or not mapping.pkgs[tool][version].store_paths[nix_system_string]
     then
         error("No nixpkgs mapping found for " .. tool .. "@" .. version .. " on " .. nix_system_string)
     end
@@ -41,7 +41,7 @@ function PLUGIN:BackendInstall(ctx)
 
     -- Nix invocation
     local nix_cmd_start = os.time()
-    local store_object = mapping.packages[tool][version][nix_system_string]
+    local store_object = mapping.pkgs[tool][version].store_paths[nix_system_string]
     -- Nix details:
     -- --add-root: registers a GC root for the store path.
     --             This prevents the store path from being GC'd when the user runs nix-collect-garbage.

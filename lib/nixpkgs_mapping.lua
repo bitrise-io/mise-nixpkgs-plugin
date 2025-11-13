@@ -4,7 +4,7 @@ local json = require("json")
 local M = {}
 
 function M.parse_mapping_file()
-    local file_path = RUNTIME.pluginDirPath .. "/nixpkgs-mapping.json"
+    local file_path = RUNTIME.pluginDirPath .. "/nixpkgs-index.json"
 
     -- TODO: file.exists() doesn't exist 🤷
     -- if not file.exists(config_path) then
