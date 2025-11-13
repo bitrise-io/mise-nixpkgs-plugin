@@ -14,7 +14,7 @@ function PLUGIN:BackendListVersions(ctx)
     local nixpkgs_mapping = require("nixpkgs_mapping")
     local mapping = nixpkgs_mapping.parse_mapping_file()
 
-    local packages = mapping.packages or {}
+    local packages = mapping.pkgs or {}
     if not packages[tool] then
         error("Tool " .. tool .. " not found in mapping")
     end
@@ -22,7 +22,7 @@ function PLUGIN:BackendListVersions(ctx)
     local versions = {}
     local nix_system_string = nix.current_system()
     for version, nix_data in pairs(packages[tool]) do
-        if nix_data[nix_system_string] then
+        if nix_data.store_paths[nix_system_string] then
             table.insert(versions, version)
         end
     end
