@@ -34,16 +34,10 @@ step_bundles:
     steps:
     - script@1:
         title: Install Nix
-        # TODO: temporary until stacks have Nix preinstalled
         inputs:
         - content: |-
             #!/usr/bin/env bash
             set -eo pipefail
-
-            export NIX_INSTALLER_NO_CONFIRM=true
-            export NIX_INSTALLER_ENABLE_FLAKES=true
-            curl -sSf -L https://install.lix.systems/lix | sh -s -- install
-
             echo "access-tokens = github.com=$NIX_GITHUB_TOKEN" | sudo tee -a /etc/nix/nix.conf
 
             # Reload daemon after nix.conf file changes
@@ -55,7 +49,6 @@ step_bundles:
         inputs:
         - content: |-
             set -eo pipefail
-            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
             mise exec --cd nixpkgs-index uv -- \
               uv run nixpkgs-index validate \
                 --config $INDEX_CONFIG_PATH \
@@ -68,7 +61,6 @@ step_bundles:
         - content: |-
             #!/bin/bash
             set -e
-            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
             export GITHUB_TOKEN=$GITHUB_API_TOKEN
             mise exec --cd nixpkgs-index uv -- uv run nixpkgs-index index \
               --config $INDEX_CONFIG_PATH \
@@ -138,8 +130,6 @@ workflows:
             set -exo pipefail
 
             mise settings experimental=true
-            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-
             mise run test
     - deploy-to-bitrise-io@2: {}
   validate-index-mac:
