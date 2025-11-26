@@ -134,7 +134,7 @@ workflows:
             set -exo pipefail
             # mise ERROR custom backends is experimental. Enable it with `mise settings experimental=true`
             mise settings experimental=true
-            mise run test
+            mise run test-integration
     - deploy-to-bitrise-io@2: {}
   validate-index-mac:
     meta:
