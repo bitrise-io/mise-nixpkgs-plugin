@@ -1,0 +1,14 @@
+return {
+	default = {
+		verbose = true,
+		ROOT = { "spec/" },
+		pattern = "_spec%.lua$",
+		exclude = {
+			"^spec/helpers/",
+		},
+	},
+	_all = {
+		coverage = false,
+	},
+}
+

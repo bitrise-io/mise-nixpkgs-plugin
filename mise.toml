@@ -8,6 +8,10 @@ lua = "5.4"
 pkl = "latest"
 stylua = "latest"
 
+[tasks.setup-test-env]
+description = "Install test dependencies (busted via luarocks)"
+run = "command -v busted >/dev/null 2>&1 || mise exec lua -- luarocks install busted"
+
 [tasks.format]
 description = "Format Lua scripts"
 run = "stylua metadata.lua hooks/"
@@ -16,6 +20,15 @@ run = "stylua metadata.lua hooks/"
 description = "Lint Lua scripts and GitHub Actions using hk"
 run = "hk check"
 
+[tasks.test-unit]
+description = "Run Lua unit tests with busted"
+depends = ["setup-test-env"]
+run = "busted"
+
+[tasks.test-all]
+description = "Run all tests (unit + integration)"
+depends = ["test-unit", "test"]
+
 [tasks.ci]
 description = "Run all CI checks"
-depends = ["lint", "test"]
+depends = ["lint", "test-all"]
