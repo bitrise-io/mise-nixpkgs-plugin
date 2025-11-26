@@ -10,8 +10,8 @@ function PLUGIN:BackendListVersions(ctx)
         error("Tool name cannot be empty")
     end
 
-    local nix = require("nix")
-    local nixpkgs_mapping = require("nixpkgs_mapping")
+    local nix = require("lib.nix")
+    local nixpkgs_mapping = require("lib.nixpkgs_mapping")
     local mapping = nixpkgs_mapping.parse_mapping_file()
 
     local packages = mapping.pkgs or {}
