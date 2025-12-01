@@ -209,6 +209,14 @@
           "aarch64-darwin": "/nix/store/9vkabbbbyfn8hv5l1r8fm59d27imq460-nodejs-22.11.0"
         }
       },
+      "20.19.6": {
+        "nixpkgs_commit": "6433d954da84df9fa1de1ae728b82d0a29801cea",
+        "commit_timestamp": "2025-11-28T17:31:58+00:00",
+        "store_paths": {
+          "x86_64-linux": "/nix/store/801vxv443kws1y38y858znrir51wd3l4-nodejs-20.19.6",
+          "aarch64-darwin": "/nix/store/2kjd2hdrq0jwvp1bsprkc1l43igxklza-nodejs-20.19.6"
+        }
+      },
       "20.19.5": {
         "nixpkgs_commit": "068d94064f38d12d111c0901366f5700f4ee366a",
         "commit_timestamp": "2025-11-22T20:51:06+00:00",
