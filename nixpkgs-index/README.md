@@ -261,15 +261,6 @@ The index keeps only one entry per version, updated to the newest commit timesta
 uv run pytest
 ```
 
-### TODO and Future Work
-
-- [x] Evaluate store objects and store them per-system in the index
-- [x] Optimize the commit update by comparing the old vs. new store objects and only update the commit hash if the store object changed (if not, nothing relevant changed for that package/version)
-- [ ] Split the index file per package for easier diffs
-- [x] Catch known Nix eval errors like attribute is EOL and throws error on purpose
-- [ ] Use nix-eval-jobs for parallel evaluation of multiple attributes
-- [x] Mise Python tooling
-
 
 ## Troubleshooting
 
