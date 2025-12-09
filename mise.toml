@@ -27,7 +27,7 @@ run = "busted"
 
 [tasks.test-all]
 description = "Run all tests (unit + integration)"
-depends = ["test-unit", "test"]
+depends = ["test-unit", "test-integration"]
 
 [tasks.ci]
 description = "Run all CI checks"
