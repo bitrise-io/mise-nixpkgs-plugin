@@ -114,11 +114,6 @@ workflows:
     steps:
     - git-clone@8: {}
     - script@1:
-        title: Upgrade mise
-        # TODO: temporary until we ship a more recent mise version with full Lua support
-        inputs:
-        - content: mise self-update
-    - script@1:
         title: Lint
         inputs:
         - content: mise run lint

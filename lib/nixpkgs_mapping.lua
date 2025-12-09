@@ -7,6 +7,8 @@ function M.parse_mapping_file()
     local file_path = RUNTIME.pluginDirPath .. "/nixpkgs-index.json"
 
     -- TODO: file.exists() doesn't exist 🤷
+    -- https://github.com/jdx/mise/pull/6754
+    -- Can be re-enabled once our pinned mise version is bumped again
     -- if not file.exists(config_path) then
     --     return {}  -- Return empty config
     -- end
