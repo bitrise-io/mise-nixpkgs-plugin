@@ -119,11 +119,15 @@ workflows:
         - content: mise run lint
     - bundle::install-nix: {}
     - script@1:
-        title: Basic plugin test
+        title: Unit Tests
+        inputs:
+        - content: mise run test-unit
+    - script@1:
+        title: Integration Tests
         inputs:
         - content: |-
             set -exo pipefail
-
+            # mise ERROR custom backends is experimental. Enable it with `mise settings experimental=true`
             mise settings experimental=true
             mise run test
     - deploy-to-bitrise-io@2: {}

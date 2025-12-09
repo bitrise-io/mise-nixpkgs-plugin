@@ -19,8 +19,8 @@ function PLUGIN:BackendInstall(ctx)
     end
 
     -- nixpkgs mapping validation
-    local nix = require("nix")
-    local nixpkgs_mapping = require("nixpkgs_mapping")
+    local nix = require("lib.nix")
+    local nixpkgs_mapping = require("lib.nixpkgs_mapping")
     local mapping = nixpkgs_mapping.parse_mapping_file()
     local nix_system_string = nix.current_system()
     if
