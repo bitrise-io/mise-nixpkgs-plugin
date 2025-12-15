@@ -1,8 +1,10 @@
 describe("PLUGIN:BackendExecEnv", function()
     local mock_modules = require("spec.helpers.mock_modules")
+    local mock_runtime = require("spec.helpers.mock_runtime")
 
     before_each(function()
         mock_modules.clear_modules()
+        mock_runtime.restore_runtime()
         _G.PLUGIN = {}
         package.loaded["hooks.backend_exec_env"] = nil
     end)
@@ -14,7 +16,16 @@ describe("PLUGIN:BackendExecEnv", function()
 
     it("sets PATH for generic tool", function()
         local file_mock = mock_modules.mock_file_module()
-        mock_modules.inject_modules({ file = file_mock })
+        local cmd_mock = {
+            exec = function(cmd)
+                if cmd:match("nix%-store") then
+                    return ""
+                end
+                return ""
+            end,
+        }
+        mock_modules.inject_modules({ file = file_mock, cmd = cmd_mock })
+        mock_runtime.inject_runtime(mock_runtime.create_runtime({ osType = "linux" }))
 
         local plugin = load_hook()
         local result = plugin:BackendExecEnv({
@@ -38,7 +49,16 @@ describe("PLUGIN:BackendExecEnv", function()
 
     it("sets MANPATH for all tools", function()
         local file_mock = mock_modules.mock_file_module()
-        mock_modules.inject_modules({ file = file_mock })
+        local cmd_mock = {
+            exec = function(cmd)
+                if cmd:match("nix%-store") then
+                    return ""
+                end
+                return ""
+            end,
+        }
+        mock_modules.inject_modules({ file = file_mock, cmd = cmd_mock })
+        mock_runtime.inject_runtime(mock_runtime.create_runtime({ osType = "linux" }))
 
         local plugin = load_hook()
         local result = plugin:BackendExecEnv({
@@ -59,7 +79,16 @@ describe("PLUGIN:BackendExecEnv", function()
 
     it("sets ruby-specific environment variables", function()
         local file_mock = mock_modules.mock_file_module()
-        mock_modules.inject_modules({ file = file_mock })
+        local cmd_mock = {
+            exec = function(cmd)
+                if cmd:match("nix%-store") then
+                    return ""
+                end
+                return ""
+            end,
+        }
+        mock_modules.inject_modules({ file = file_mock, cmd = cmd_mock })
+        mock_runtime.inject_runtime(mock_runtime.create_runtime({ osType = "linux" }))
 
         local plugin = load_hook()
         local result = plugin:BackendExecEnv({
@@ -93,7 +122,16 @@ describe("PLUGIN:BackendExecEnv", function()
 
     it("returns correct PATH structure for ruby", function()
         local file_mock = mock_modules.mock_file_module()
-        mock_modules.inject_modules({ file = file_mock })
+        local cmd_mock = {
+            exec = function(cmd)
+                if cmd:match("nix%-store") then
+                    return ""
+                end
+                return ""
+            end,
+        }
+        mock_modules.inject_modules({ file = file_mock, cmd = cmd_mock })
+        mock_runtime.inject_runtime(mock_runtime.create_runtime({ osType = "linux" }))
 
         local plugin = load_hook()
         local result = plugin:BackendExecEnv({

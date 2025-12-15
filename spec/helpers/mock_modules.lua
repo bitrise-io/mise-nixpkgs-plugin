@@ -31,6 +31,7 @@ function M.clear_modules()
     package.loaded["cmd"] = nil
     package.loaded["lib.nix"] = nil
     package.loaded["lib.nixpkgs_mapping"] = nil
+    package.loaded["lib.runtime_deps"] = nil
 end
 
 return M
