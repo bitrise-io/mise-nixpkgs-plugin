@@ -85,7 +85,9 @@ function M.create_library_env_vars(lib_paths, os_type)
     end
 
     for _, lib_path in ipairs(lib_paths) do
-        table.insert(env_vars, { key = key, value = lib_path })
+		if not lib_path:match("glibc") then
+			table.insert(env_vars, { key = key, value = lib_path })
+		end
     end
 
     return env_vars
