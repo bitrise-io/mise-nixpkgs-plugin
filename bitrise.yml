@@ -28,6 +28,23 @@ pipelines:
     workflows:
       validate-index-mac: {}
       validate-index-linux: {}
+  checks:
+    status_report_name: Checks
+    triggers:
+      push:
+      - branch: main
+      pull_request:
+      - source_branch: "*"
+    workflows:
+      check: {}
+      integration-tests-linux-edge:
+        depends_on: [ check ]
+      integration-tests-linux-stable:
+        depends_on: [ check ]
+      integration-tests-darwin-edge:
+        depends_on: [ check ]
+      integration-tests-darwin-stable:
+        depends_on: [ check ]
 
 step_bundles:
   install-nix:
@@ -42,6 +59,18 @@ step_bundles:
 
             # Reload daemon after nix.conf file changes
             sudo launchctl kickstart -k system/org.nixos.nix-daemon || true
+  integration-tests:
+    steps:
+    - git-clone@8: {}
+    - bundle::install-nix: {}
+    - script@1:
+        title: Integration Tests
+        inputs:
+        - content: |-
+            set -exo pipefail
+            # mise ERROR custom backends is experimental. Enable it with `mise settings experimental=true`
+            mise settings experimental=true
+            mise run test-integration
   validate-index:
     steps:
     - script@1:
@@ -105,32 +134,58 @@ step_bundles:
               --base main
 
 workflows:
-  primary:
-    triggers:
-        push:
-        - branch: main
-        pull_request:
-        - source_branch: "*"
+  check:
     steps:
     - git-clone@8: {}
     - script@1:
         title: Lint
         inputs:
         - content: mise run lint
-    - bundle::install-nix: {}
     - script@1:
         title: Unit Tests
         inputs:
         - content: mise run test-unit
+    - deploy-to-bitrise-io@2: {}
+  integration-tests-linux-edge:
+    meta:
+      bitrise.io:
+        stack: ubuntu-noble-24.04-bitrise-2025-android
+    steps:
+    - bundle::integration-tests: {}
+  integration-tests-linux-stable:
+    meta:
+      bitrise.io:
+        stack: linux-docker-android-22.04
+    steps:
+    # TODO: temporary until this stack has Nix preinstalled
     - script@1:
-        title: Integration Tests
+        title: Install Nix
         inputs:
         - content: |-
-            set -exo pipefail
-            # mise ERROR custom backends is experimental. Enable it with `mise settings experimental=true`
-            mise settings experimental=true
-            mise run test-integration
-    - deploy-to-bitrise-io@2: {}
+            #!/usr/bin/env bash
+            set -eo pipefail
+
+            export NIX_INSTALLER_NO_CONFIRM=true
+            export NIX_INSTALLER_ENABLE_FLAKES=true
+            curl -sSf -L https://install.lix.systems/lix | sh -s -- install
+
+            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+            envman add --key PATH --value $PATH
+    - bundle::integration-tests: {}
+  integration-tests-darwin-edge:
+    meta:
+      bitrise.io:
+        stack: osx-xcode-edge
+        machine_type_id: g2.mac.x-large
+    steps:
+    - bundle::integration-tests: {}
+  integration-tests-darwin-stable:
+    meta:
+      bitrise.io:
+        stack: osx-xcode-latest-stable
+        machine_type_id: g2.mac.x-large
+    steps:
+    - bundle::integration-tests: {}
   validate-index-mac:
     meta:
       bitrise.io:
