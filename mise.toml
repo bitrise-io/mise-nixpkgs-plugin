@@ -14,7 +14,7 @@ run = "command -v busted >/dev/null 2>&1 || mise exec lua -- luarocks install bu
 
 [tasks.format]
 description = "Format Lua scripts"
-run = "stylua metadata.lua hooks/"
+run = "stylua metadata.lua hooks/ lib/ spec/"
 
 [tasks.lint]
 description = "Lint Lua scripts and GitHub Actions using hk"
