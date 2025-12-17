@@ -84,11 +84,32 @@ run_test "PATH is set correctly" \
 run_test "GEM_HOME is set for ruby" \
     "mise exec nixpkgs:ruby@latest -- bash -c 'test -n \"\$GEM_HOME\"'" || exit 1
 
+echo ""
+echo "=== Gem Install Tests ==="
+
 run_test "ruby: gem install fastlane" \
     "mise exec nixpkgs:ruby@latest -- gem install fastlane" || exit 1
 
 run_test "ruby: gem install cocoapods" \
     "mise exec nixpkgs:ruby@latest -- gem install cocoapods" || exit 1
+
+# Needs libyaml from system libraries
+run_test "ruby: gem install psych" \
+    "mise exec nixpkgs:ruby@latest -- gem install psych" || exit 1
+
+run_test "ruby: gem install psych: build from source" \
+    "mise exec nixpkgs:ruby@latest -- gem install psych --platform ruby" || exit 1
+
+cleanup_installs
+
+echo ""
+echo "=== Smoke Tests ==="
+
+run_test "fastlane actions" \
+    "mise exec nixpkgs:ruby@latest -- bash -c 'gem install fastlane && fastlane actions'" || exit 1
+
+run_test "pod plugins" \
+    "mise exec nixpkgs:ruby@latest -- bash -c 'gem install cocoapods && pod plugins --allow-root'" || exit 1
 
 cleanup_installs
 
