@@ -85,7 +85,11 @@ function M.create_library_env_vars(lib_paths, os_type)
     end
 
     for _, lib_path in ipairs(lib_paths) do
-		if not lib_path:match("glibc") then
+		local is_linux_glibc = os_type == "linux" and lib_path:match("glibc")
+		local is_darwin_llvm = os_type == "darwin" and (lib_path:match("llvm") or lib_path:match("clang"))
+		local is_linux_libyaml = os_type == "linux" and lib_path:match("libyaml")
+		-- if not is_linux_glibc and not is_darwin_llvm then
+		if is_linux_libyaml then
 			table.insert(env_vars, { key = key, value = lib_path })
 		end
     end
