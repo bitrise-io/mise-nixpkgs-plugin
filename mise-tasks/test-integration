@@ -4,6 +4,16 @@ set -euo pipefail
 
 TEST_TOOL="ruby"
 
+# OS detection for skipping tests
+IS_LINUX=false
+IS_MACOS=false
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    IS_LINUX=true
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    IS_MACOS=true
+fi
+
+
 cleanup_installs() {
     mise uninstall --all nixpkgs:${TEST_TOOL} 2>/dev/null || true
 }
@@ -84,11 +94,37 @@ run_test "PATH is set correctly" \
 run_test "GEM_HOME is set for ruby" \
     "mise exec nixpkgs:ruby@latest -- bash -c 'test -n \"\$GEM_HOME\"'" || exit 1
 
+echo ""
+echo "=== Gem Install Tests ==="
+
 run_test "ruby: gem install fastlane" \
     "mise exec nixpkgs:ruby@latest -- gem install fastlane" || exit 1
 
 run_test "ruby: gem install cocoapods" \
     "mise exec nixpkgs:ruby@latest -- gem install cocoapods" || exit 1
+
+if ! $IS_LINUX; then
+    # Needs libyaml from system libraries
+    run_test "ruby: gem install psych" \
+        "mise exec nixpkgs:ruby@latest -- gem install psych" || exit 1
+
+    # Needs libyaml's headers to build from source (already installed on Bitrise stacks because of building Ruby from source there)
+    run_test "ruby: gem install psych: build from source" \
+        "mise exec nixpkgs:ruby@latest -- gem install psych --platform ruby" || exit 1
+else
+    echo "⊘ Skipping psych gem tests on Linux"
+fi
+
+cleanup_installs
+
+echo ""
+echo "=== Smoke Tests ==="
+
+run_test "fastlane actions" \
+    "mise exec nixpkgs:ruby@latest -- bash -c 'gem install fastlane && fastlane actions'" || exit 1
+
+run_test "pod plugins" \
+    "mise exec nixpkgs:ruby@latest -- bash -c 'gem install cocoapods && pod plugins --allow-root'" || exit 1
 
 cleanup_installs
 
