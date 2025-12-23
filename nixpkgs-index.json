@@ -1,6 +1,14 @@
 {
   "pkgs": {
     "node": {
+      "24.12.0": {
+        "nixpkgs_commit": "6bcbf615843cd932819a4210c5188588975df45c",
+        "commit_timestamp": "2025-12-20T09:49:09+00:00",
+        "store_paths": {
+          "x86_64-linux": "/nix/store/9z1v3wyrxp6fpyzw21lcakd5w7aknzyc-nodejs-24.12.0",
+          "aarch64-darwin": "/nix/store/b1h0af3yb3z9jz048phclcqw6ihiww67-nodejs-24.12.0"
+        }
+      },
       "24.11.1": {
         "nixpkgs_commit": "5c46f3bd98147c8d82366df95bbef2cab3a967ea",
         "commit_timestamp": "2025-11-26T14:39:26+00:00",
@@ -525,6 +533,14 @@
       }
     },
     "ruby": {
+      "3.4.8": {
+        "nixpkgs_commit": "6bcbf615843cd932819a4210c5188588975df45c",
+        "commit_timestamp": "2025-12-20T09:49:09+00:00",
+        "store_paths": {
+          "x86_64-linux": "/nix/store/gphbrsb5wd49qwg9bxby194wwm47awks-ruby-3.4.8",
+          "aarch64-darwin": "/nix/store/l7y8sk5wjy059vb4p2zqimhfg81y7k56-ruby-3.4.8"
+        }
+      },
       "3.4.7": {
         "nixpkgs_commit": "5c46f3bd98147c8d82366df95bbef2cab3a967ea",
         "commit_timestamp": "2025-11-26T14:39:26+00:00",
