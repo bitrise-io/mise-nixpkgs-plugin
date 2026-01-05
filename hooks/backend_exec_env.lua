@@ -14,6 +14,12 @@ function PLUGIN:BackendExecEnv(ctx)
         { key = "PATH", value = bin_path },
     }
 
+    local runtime_deps = require("lib.runtime_deps")
+    local runtime_dep_env_vars = runtime_deps.get_env_vars(install_path, tool, version, RUNTIME.osType)
+    for _, env_var in ipairs(runtime_dep_env_vars) do
+        table.insert(env_vars, env_var)
+    end
+
     if tool == "ruby" then
         -- Nix store is read-only, gems should be installed to the state dir
         table.insert(env_vars, { key = "GEM_HOME", value = file.join_path(install_path, "state/gems") })
