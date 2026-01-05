@@ -37,10 +37,11 @@ pipelines:
       - source_branch: "*"
     workflows:
       check: {}
-      integration-tests-linux-edge:
-        depends_on: [ check ]
-      integration-tests-linux-stable:
-        depends_on: [ check ]
+      # TODO: disable Linux tests until we figure out glibc issues and native gems
+      # integration-tests-linux-edge:
+      #   depends_on: [ check ]
+      # integration-tests-linux-stable:
+      #   depends_on: [ check ]
       integration-tests-darwin-edge:
         depends_on: [ check ]
       integration-tests-darwin-stable:
