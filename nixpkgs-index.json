@@ -355,20 +355,20 @@
           "aarch64-darwin": "/nix/store/wqnlp9wcgs0g3mf1kpb8swibm3hcmb46-python3-3.14.0"
         }
       },
-      "3.13.11": {
-        "nixpkgs_commit": "77c3c72deb43825c486e53e7435b58b481fbfefa",
-        "commit_timestamp": "2026-01-01T13:49:45+00:00",
-        "store_paths": {
-          "x86_64-linux": "/nix/store/qzc04a3npl70cyyy6flnnrb2ig3kayxm-python3-3.13.11",
-          "aarch64-darwin": "/nix/store/48ak878425b9wyrkwd826d2043m3ii36-python3-3.13.11"
-        }
-      },
       "3.14.0rc2": {
         "nixpkgs_commit": "3ee981a56da5f11fec024cf2aba37963481c3a17",
         "commit_timestamp": "2025-12-26T15:46:50+00:00",
         "store_paths": {
           "x86_64-linux": "/nix/store/679vjplga917hx6kz9ijgxgl28w33q1q-python3-3.14.0rc2",
           "aarch64-darwin": "/nix/store/yc72i5d94gi3hlcmqy32v97ajz1w0m51-python3-3.14.0rc2"
+        }
+      },
+      "3.13.11": {
+        "nixpkgs_commit": "77c3c72deb43825c486e53e7435b58b481fbfefa",
+        "commit_timestamp": "2026-01-01T13:49:45+00:00",
+        "store_paths": {
+          "x86_64-linux": "/nix/store/qzc04a3npl70cyyy6flnnrb2ig3kayxm-python3-3.13.11",
+          "aarch64-darwin": "/nix/store/48ak878425b9wyrkwd826d2043m3ii36-python3-3.13.11"
         }
       },
       "3.13.9": {
@@ -558,8 +558,8 @@
     },
     "ruby": {
       "3.4.8": {
-        "nixpkgs_commit": "77c3c72deb43825c486e53e7435b58b481fbfefa",
-        "commit_timestamp": "2026-01-01T13:49:45+00:00",
+        "nixpkgs_commit": "61db79b0c6b838d9894923920b612048e1201926",
+        "commit_timestamp": "2026-01-13T11:13:53+00:00",
         "store_paths": {
           "x86_64-linux": "/nix/store/1861cbsysxfwvg5lbdp61al76dqlw9ih-ruby-3.4.8",
           "aarch64-darwin": "/nix/store/wsrnc2byfbi6b7f7igfbpx0l2jbyvdy1-ruby-3.4.8"
@@ -622,8 +622,8 @@
         }
       },
       "3.3.10": {
-        "nixpkgs_commit": "77c3c72deb43825c486e53e7435b58b481fbfefa",
-        "commit_timestamp": "2026-01-01T13:49:45+00:00",
+        "nixpkgs_commit": "61db79b0c6b838d9894923920b612048e1201926",
+        "commit_timestamp": "2026-01-13T11:13:53+00:00",
         "store_paths": {
           "x86_64-linux": "/nix/store/x5y7r23d2j2g0rq7dqfvka9zqc3qfhz8-ruby-3.3.10",
           "aarch64-darwin": "/nix/store/23qvv82dzb51abc4invhxifshkq0p1w6-ruby-3.3.10"
