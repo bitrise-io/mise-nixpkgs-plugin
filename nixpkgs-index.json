@@ -137,6 +137,14 @@
           "aarch64-darwin": "/nix/store/zykg602911gq649r47vcsppd9r0rdf4g-nodejs-24.0.0"
         }
       },
+      "22.22.0": {
+        "nixpkgs_commit": "13868c071cc73a5e9f610c47d7bb08e5da64fdd5",
+        "commit_timestamp": "2026-01-14T12:51:35+00:00",
+        "store_paths": {
+          "x86_64-linux": "/nix/store/bf45nflf0wylnscwwa2xgliib91x226l-nodejs-22.22.0",
+          "aarch64-darwin": "/nix/store/7rgrqwip7bkn9d0y6x9iif8mgbikl5cv-nodejs-22.22.0"
+        }
+      },
       "22.21.1": {
         "nixpkgs_commit": "77c3c72deb43825c486e53e7435b58b481fbfefa",
         "commit_timestamp": "2026-01-01T13:49:45+00:00",
@@ -215,6 +223,14 @@
         "store_paths": {
           "x86_64-linux": "/nix/store/fkyp1bm5gll9adnfcj92snyym524mdrj-nodejs-22.11.0",
           "aarch64-darwin": "/nix/store/9vkabbbbyfn8hv5l1r8fm59d27imq460-nodejs-22.11.0"
+        }
+      },
+      "20.20.0": {
+        "nixpkgs_commit": "13868c071cc73a5e9f610c47d7bb08e5da64fdd5",
+        "commit_timestamp": "2026-01-14T12:51:35+00:00",
+        "store_paths": {
+          "x86_64-linux": "/nix/store/jfar9wnj6kvr0gr6klh1gk7vgckkfr5j-nodejs-20.20.0",
+          "aarch64-darwin": "/nix/store/l5zcv2mlpz4vkfr8gaznjl4l09pw7qva-nodejs-20.20.0"
         }
       },
       "20.19.6": {
