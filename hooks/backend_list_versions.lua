@@ -12,6 +12,7 @@ function PLUGIN:BackendListVersions(ctx)
 
     local nix = require("lib.nix")
     local nixpkgs_mapping = require("lib.nixpkgs_mapping")
+    local util = require("lib.version")
     local mapping = nixpkgs_mapping.parse_mapping_file()
 
     local packages = mapping.pkgs or {}
@@ -30,6 +31,11 @@ function PLUGIN:BackendListVersions(ctx)
     if #versions == 0 then
         error("No versions found for " .. tool)
     end
+
+    -- Sort versions (contract: plugin should return versions in ascending order, Mise won't sort them)
+    table.sort(versions, function(a, b)
+        return util.compare_versions(a, b) < 0
+    end)
 
     return { versions = versions }
 end
