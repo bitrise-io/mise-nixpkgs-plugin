@@ -30,6 +30,71 @@ M.sample_index = {
 				},
 			},
 		},
+		go = {
+			["1.9.0"] = {
+				nixpkgs_commit = "commit1",
+				commit_timestamp = "2025-01-01T12:00:00+00:00",
+				store_paths = {
+					["x86_64-linux"] = "/nix/store/hash-go-1.9.0",
+				},
+			},
+			["1.0.2"] = {
+				nixpkgs_commit = "commit2",
+				commit_timestamp = "2025-01-02T12:00:00+00:00",
+				store_paths = {
+					["x86_64-linux"] = "/nix/store/hash-go-1.0.2",
+				},
+			},
+			["1.10.0"] = {
+				nixpkgs_commit = "commit3",
+				commit_timestamp = "2025-01-03T12:00:00+00:00",
+				store_paths = {
+					["x86_64-linux"] = "/nix/store/hash-go-1.10.0",
+				},
+			},
+			["1.0.10"] = {
+				nixpkgs_commit = "commit4",
+				commit_timestamp = "2025-01-04T12:00:00+00:00",
+				store_paths = {
+					["x86_64-linux"] = "/nix/store/hash-go-1.0.10",
+				},
+			},
+			["2.0.0"] = {
+				nixpkgs_commit = "commit5",
+				commit_timestamp = "2025-01-05T12:00:00+00:00",
+				store_paths = {
+					["x86_64-linux"] = "/nix/store/hash-go-2.0.0",
+				},
+			},
+			["3.14.0-rc1"] = {
+				nixpkgs_commit = "commit6",
+				commit_timestamp = "2025-01-06T12:00:00+00:00",
+				store_paths = {
+					["x86_64-linux"] = "/nix/store/hash-go-3.14.0-rc1",
+				},
+			},
+			["3.14.0-rc2"] = {
+				nixpkgs_commit = "commit7",
+				commit_timestamp = "2025-01-07T12:00:00+00:00",
+				store_paths = {
+					["x86_64-linux"] = "/nix/store/hash-go-3.14.0-rc2",
+				},
+			},
+			["3.14.0"] = {
+				nixpkgs_commit = "commit8",
+				commit_timestamp = "2025-01-08T12:00:00+00:00",
+				store_paths = {
+					["x86_64-linux"] = "/nix/store/hash-go-3.14.0",
+				},
+			},
+			["3.14.0rc99"] = {
+				nixpkgs_commit = "commit9",
+				commit_timestamp = "2025-01-09T12:00:00+00:00",
+				store_paths = {
+					["x86_64-linux"] = "/nix/store/hash-go-3.14.0rc99",
+				},
+			},
+		},
 	},
 }
 

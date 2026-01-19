@@ -157,4 +157,45 @@ describe("PLUGIN:BackendListVersions", function()
 			plugin:BackendListVersions({ tool = "ruby" })
 		end, "No versions found for ruby")
 	end)
+
+	it("sorts versions semantically not lexicographically", function()
+		mock_runtime.inject_runtime(mock_runtime.create_runtime({
+			osType = "linux",
+			archType = "amd64",
+		}))
+
+		local nix_mock = {
+			current_system = function()
+				return "x86_64-linux"
+			end,
+		}
+
+		local nixpkgs_mapping_mock = {
+			parse_mapping_file = function()
+				return fixtures.sample_index
+			end,
+		}
+
+		mock_modules.inject_modules({
+			["lib.nix"] = nix_mock,
+			["lib.nixpkgs_mapping"] = nixpkgs_mapping_mock,
+		})
+
+		local plugin = load_hook()
+		local result = plugin:BackendListVersions({ tool = "go" })
+
+		assert.equals(9, #result.versions)
+		assert.equals("1.0.2", result.versions[1])
+		assert.equals("1.0.10", result.versions[2])
+		assert.equals("1.9.0", result.versions[3])
+		assert.equals("1.10.0", result.versions[4])
+		assert.equals("2.0.0", result.versions[5])
+		-- According to semver, pre-release versions come before the release version
+		assert.equals("3.14.0-rc1", result.versions[6])
+		assert.equals("3.14.0-rc2", result.versions[7])
+		assert.equals("3.14.0", result.versions[8])
+		-- 3.14.0rc99 is not a valid semver (missing hyphen), so it's treated as
+		-- a version with extra text and sorts after 3.14.0
+		assert.equals("3.14.0rc99", result.versions[9])
+	end)
 end)
