@@ -151,6 +151,10 @@ workflows:
       bitrise.io:
         stack: ubuntu-noble-24.04-bitrise-2025-android
     steps:
+    - script@1:
+        title: Install dev dependencies for native gem tests
+        inputs:
+        - content: sudo apt-get update && sudo apt-get install -y libpq-dev libmysqlclient-dev
     - bundle::integration-tests: {}
   integration-tests-linux-stable:
     meta:
@@ -171,6 +175,10 @@ workflows:
 
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
             envman add --key PATH --value $PATH
+    - script@1:
+        title: Install dev dependencies for native gem tests
+        inputs:
+        - content: sudo apt-get update && sudo apt-get install -y libpq-dev libmysqlclient-dev
     - bundle::integration-tests: {}
   integration-tests-darwin-edge:
     meta:
