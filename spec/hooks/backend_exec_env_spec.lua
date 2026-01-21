@@ -76,7 +76,7 @@ describe("PLUGIN:BackendExecEnv", function()
 		local found_gems_bin_path = false
 		local found_rubyopt = false
 		local found_cc = false
-		local found_ld_library_path = false
+		local found_wrapper_bin_path = false
 
 		for _, env_var in ipairs(result.env_vars) do
 			if env_var.key == "GEM_HOME" and env_var.value:match("/state/gems$") then
@@ -94,8 +94,8 @@ describe("PLUGIN:BackendExecEnv", function()
 			if env_var.key == "CC" then
 				found_cc = true
 			end
-			if env_var.key == "LD_LIBRARY_PATH" then
-				found_ld_library_path = true
+			if env_var.key == "PATH" and env_var.value:match("/state/bin$") then
+				found_wrapper_bin_path = true
 			end
 		end
 
@@ -105,10 +105,10 @@ describe("PLUGIN:BackendExecEnv", function()
 		-- Linux-specific env vars should NOT be set on darwin
 		assert.is_false(found_rubyopt, "RUBYOPT should not be set on darwin")
 		assert.is_false(found_cc, "CC should not be set on darwin")
-		assert.is_false(found_ld_library_path, "LD_LIBRARY_PATH should not be set on darwin")
+		assert.is_false(found_wrapper_bin_path, "wrapper bin PATH should not be set on darwin")
 	end)
 
-	it("sets RUBYOPT, CC, and LD_LIBRARY_PATH for ruby on linux", function()
+	it("sets RUBYOPT, CC, and wrapper bin PATH for ruby on linux", function()
 		local file_mock = mock_modules.mock_file_module()
 		local nix_mock = mock_modules.mock_nix_module({
 			is_linux = true,
@@ -132,7 +132,7 @@ describe("PLUGIN:BackendExecEnv", function()
 
 		local rubyopt_value = nil
 		local cc_value = nil
-		local ld_library_path_value = nil
+		local found_wrapper_bin_path = false
 
 		for _, env_var in ipairs(result.env_vars) do
 			if env_var.key == "RUBYOPT" then
@@ -141,8 +141,8 @@ describe("PLUGIN:BackendExecEnv", function()
 			if env_var.key == "CC" then
 				cc_value = env_var.value
 			end
-			if env_var.key == "LD_LIBRARY_PATH" then
-				ld_library_path_value = env_var.value
+			if env_var.key == "PATH" and env_var.value:match("/state/bin$") then
+				found_wrapper_bin_path = true
 			end
 		end
 
@@ -154,10 +154,8 @@ describe("PLUGIN:BackendExecEnv", function()
 		assert.is_not_nil(cc_value, "CC not found")
 		assert.is_truthy(cc_value:match("gcc%-wrapper"))
 
-		-- Check LD_LIBRARY_PATH contains Nix paths first, then system paths
-		assert.is_not_nil(ld_library_path_value, "LD_LIBRARY_PATH not found")
-		assert.is_truthy(ld_library_path_value:match("/nix/store/abc123%-glibc%-2%.40/lib"))
-		assert.is_truthy(ld_library_path_value:match("/nix/store/def456%-gcc%-lib/lib"))
+		-- Check wrapper bin PATH is set (contains Ruby wrappers with LD_LIBRARY_PATH)
+		assert.is_true(found_wrapper_bin_path, "wrapper bin PATH not found")
 	end)
 
 	it("does not set Linux glibc workaround vars if glibc dependency not found", function()

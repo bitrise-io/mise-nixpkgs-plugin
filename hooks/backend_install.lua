@@ -140,6 +140,71 @@ exec /usr/bin/gcc ${ALL_L_FLAGS} "${NON_L_ARGS[@]}"
 GCCEOF
 chmod +x '%s']=], gcc_wrapper_path, glibc_path, gcc_lib_path, gcc_wrapper_path)
             cmd.exec(write_gcc_wrapper_cmd)
+
+            -- Create wrapper bin directory with Ruby executable wrappers
+            -- These wrappers set LD_LIBRARY_PATH only when invoking Ruby,
+            -- avoiding glibc conflicts with system binaries like bash
+            local wrapper_bin_dir = file.join_path(install_path, "state", "bin")
+            cmd.exec("mkdir -p " .. wrapper_bin_dir)
+
+            local real_bin_dir = file.join_path(install_path, "result", "bin")
+
+            -- Get all Nix store dependencies with lib directories
+            -- This includes openssl, zlib, libffi, libyaml, etc.
+            local get_nix_libs_cmd = string.format(
+                "nix-store --query --references %s 2>/dev/null | while read dep; do [ -d \"$dep/lib\" ] && echo -n \"$dep/lib:\"; done",
+                store_path
+            )
+            local nix_lib_paths = cmd.exec(get_nix_libs_cmd):gsub(":$", "")
+
+            local ld_library_path = string.format(
+                "%s:%s:/lib/%s-linux-gnu:/usr/lib/%s-linux-gnu:/lib:/usr/lib",
+                nix_lib_paths,
+                ruby_lib_path,
+                arch,
+                arch
+            )
+
+            -- Create wrappers for Ruby executables
+            -- Runtime executables (ruby, irb) need LD_LIBRARY_PATH for loading gems with native extensions
+            -- Compilation executables (gem, bundle) should NOT set LD_LIBRARY_PATH to avoid
+            -- breaking system tools (perl, etc.) that are called during gem installation
+            local runtime_executables = { "ruby", "irb", "erb" }
+            local compile_executables = { "gem", "bundle", "bundler", "rake", "rdoc", "ri" }
+
+            for _, exe in ipairs(runtime_executables) do
+                local real_exe = file.join_path(real_bin_dir, exe)
+                local wrapper_exe = file.join_path(wrapper_bin_dir, exe)
+                local write_wrapper_cmd = string.format([[
+if [ -f '%s' ]; then
+    cat > '%s' << 'WRAPEOF'
+#!/bin/bash
+# Wrapper that sets LD_LIBRARY_PATH for Nix Ruby runtime
+export LD_LIBRARY_PATH='%s'
+exec '%s' "$@"
+WRAPEOF
+    chmod +x '%s'
+fi
+]], real_exe, wrapper_exe, ld_library_path, real_exe, wrapper_exe)
+                cmd.exec(write_wrapper_cmd)
+            end
+
+            -- Compilation wrappers - no LD_LIBRARY_PATH to avoid breaking system tools
+            for _, exe in ipairs(compile_executables) do
+                local real_exe = file.join_path(real_bin_dir, exe)
+                local wrapper_exe = file.join_path(wrapper_bin_dir, exe)
+                local write_wrapper_cmd = string.format([[
+if [ -f '%s' ]; then
+    cat > '%s' << 'WRAPEOF'
+#!/bin/bash
+# Wrapper for Nix Ruby (no LD_LIBRARY_PATH to avoid breaking system tools during compilation)
+exec '%s' "$@"
+WRAPEOF
+    chmod +x '%s'
+fi
+]], real_exe, wrapper_exe, real_exe, wrapper_exe)
+                cmd.exec(write_wrapper_cmd)
+            end
         end
     end
 

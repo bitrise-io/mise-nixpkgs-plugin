@@ -4,13 +4,10 @@ set -euo pipefail
 
 TEST_TOOL="ruby"
 
-# OS detection for skipping tests
+# OS detection for platform-specific tests
 IS_LINUX=false
-IS_MACOS=false
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     IS_LINUX=true
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    IS_MACOS=true
 fi
 
 
@@ -103,16 +100,28 @@ run_test "ruby: gem install fastlane" \
 run_test "ruby: gem install cocoapods" \
     "mise exec nixpkgs:ruby@latest -- gem install cocoapods" || exit 1
 
-if ! $IS_LINUX; then
-    # Needs libyaml from system libraries
-    run_test "ruby: gem install psych" \
-        "mise exec nixpkgs:ruby@latest -- gem install psych" || exit 1
+# Needs libyaml from system libraries
+run_test "ruby: gem install psych" \
+    "mise exec nixpkgs:ruby@latest -- gem install psych" || exit 1
 
-    # Needs libyaml's headers to build from source (already installed on Bitrise stacks because of building Ruby from source there)
-    run_test "ruby: gem install psych: build from source" \
-        "mise exec nixpkgs:ruby@latest -- gem install psych --platform ruby" || exit 1
-else
-    echo "⊘ Skipping psych gem tests on Linux"
+# Needs libyaml's headers to build from source (already installed on Bitrise stacks because of building Ruby from source there)
+run_test "ruby: gem install psych: build from source" \
+    "mise exec nixpkgs:ruby@latest -- gem install psych --platform ruby" || exit 1
+
+if $IS_LINUX; then
+    # Native gem tests with apt-installed dev libraries (glibc compatibility)
+    # These require: apt-get install libpq-dev libmysqlclient-dev
+    run_test "ruby: gem install pg (native extension)" \
+        "mise exec nixpkgs:ruby@latest -- gem install pg --no-document" || exit 1
+
+    run_test "ruby: require pg" \
+        "mise exec nixpkgs:ruby@latest -- ruby -e \"require 'pg'; puts PG.library_version\"" || exit 1
+
+    run_test "ruby: gem install mysql2 (native extension)" \
+        "mise exec nixpkgs:ruby@latest -- gem install mysql2 --no-document" || exit 1
+
+    run_test "ruby: require mysql2" \
+        "mise exec nixpkgs:ruby@latest -- ruby -e \"require 'mysql2'; puts 'mysql2 loaded'\"" || exit 1
 fi
 
 cleanup_installs

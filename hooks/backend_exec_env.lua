@@ -31,9 +31,6 @@ function PLUGIN:BackendExecEnv(ctx)
             local ruby_lib_path = file.join_path(store_path, "lib")
 
             if glibc_path and gcc_lib_path then
-                -- Detect architecture for system library paths
-                local arch = nix.current_system():match("^([^-]+)")
-
                 -- RUBYOPT: Load script that modifies RbConfig to add rpath flags for gem compilation
                 local rubyopt_path = file.join_path(install_path, "state", "ldflags_inject.rb")
                 table.insert(env_vars, { key = "RUBYOPT", value = "-r" .. rubyopt_path })
@@ -43,18 +40,11 @@ function PLUGIN:BackendExecEnv(ctx)
                 local gcc_wrapper_path = file.join_path(install_path, "state", "gcc-wrapper")
                 table.insert(env_vars, { key = "CC", value = gcc_wrapper_path })
 
-                -- LD_LIBRARY_PATH: Set at runtime with Nix paths first, then system paths
-                -- This allows the Nix dynamic linker to find transitive dependencies of system libraries
-                -- (e.g., libpq depends on libssl, which needs to be found via LD_LIBRARY_PATH)
-                local ld_library_path = string.format(
-                    "%s/lib:%s/lib:%s:/lib/%s-linux-gnu:/usr/lib/%s-linux-gnu:/lib:/usr/lib",
-                    glibc_path,
-                    gcc_lib_path,
-                    ruby_lib_path,
-                    arch,
-                    arch
-                )
-                table.insert(env_vars, { key = "LD_LIBRARY_PATH", value = ld_library_path })
+                -- PATH: Add wrapper bin directory FIRST so Ruby wrappers are used
+                -- The wrappers set LD_LIBRARY_PATH only when invoking Ruby executables,
+                -- avoiding glibc conflicts with system binaries like bash
+                local wrapper_bin_path = file.join_path(install_path, "state", "bin")
+                table.insert(env_vars, 1, { key = "PATH", value = wrapper_bin_path })
             end
         end
     elseif tool == "python" then
