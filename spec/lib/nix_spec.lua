@@ -1,9 +1,65 @@
+describe("nix.is_linux", function()
+	local nix
+	local mock_runtime = require("spec.helpers.mock_runtime")
+
+	before_each(function()
+		package.loaded["lib.nix"] = nil
+		mock_runtime.restore_runtime()
+	end)
+
+	it("returns true on linux", function()
+		mock_runtime.inject_runtime(mock_runtime.create_runtime({
+			osType = "linux",
+			archType = "amd64",
+		}))
+		nix = require("lib.nix")
+		assert.is_true(nix.is_linux())
+	end)
+
+	it("returns false on darwin", function()
+		mock_runtime.inject_runtime(mock_runtime.create_runtime({
+			osType = "darwin",
+			archType = "arm64",
+		}))
+		nix = require("lib.nix")
+		assert.is_false(nix.is_linux())
+	end)
+end)
+
+describe("nix.is_darwin", function()
+	local nix
+	local mock_runtime = require("spec.helpers.mock_runtime")
+
+	before_each(function()
+		package.loaded["lib.nix"] = nil
+		mock_runtime.restore_runtime()
+	end)
+
+	it("returns true on darwin", function()
+		mock_runtime.inject_runtime(mock_runtime.create_runtime({
+			osType = "darwin",
+			archType = "arm64",
+		}))
+		nix = require("lib.nix")
+		assert.is_true(nix.is_darwin())
+	end)
+
+	it("returns false on linux", function()
+		mock_runtime.inject_runtime(mock_runtime.create_runtime({
+			osType = "linux",
+			archType = "amd64",
+		}))
+		nix = require("lib.nix")
+		assert.is_false(nix.is_darwin())
+	end)
+end)
+
 describe("nix.current_system", function()
 	local nix
 	local mock_runtime = require("spec.helpers.mock_runtime")
 
 	before_each(function()
-		package.loaded["nix"] = nil
+		package.loaded["lib.nix"] = nil
 		mock_runtime.restore_runtime()
 	end)
 
