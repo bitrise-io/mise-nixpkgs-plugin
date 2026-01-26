@@ -158,20 +158,6 @@ workflows:
       bitrise.io:
         stack: linux-docker-android-22.04
     steps:
-    # TODO: temporary until this stack has Nix preinstalled
-    - script@1:
-        title: Install Nix
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -eo pipefail
-
-            export NIX_INSTALLER_NO_CONFIRM=true
-            export NIX_INSTALLER_ENABLE_FLAKES=true
-            curl -sSf -L https://install.lix.systems/lix | sh -s -- install
-
-            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-            envman add --key PATH --value $PATH
     - bundle::integration-tests: {}
   integration-tests-darwin-edge:
     meta:
