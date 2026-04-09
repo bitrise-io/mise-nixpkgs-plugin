@@ -28,12 +28,12 @@ pkgs:
     tests:
       - python --version | grep $VERSION
 
-  node:
-    nixpkgs_attributes:
-      - nodejs
-      - nodejs_24
-      - nodejs_22
-      - nodejs_20
-      - nodejs_18
-    tests:
-      - node --version | grep $VERSION
+  # node:
+  #   nixpkgs_attributes:
+  #     - nodejs
+  #     - nodejs_24
+  #     - nodejs_22
+  #     - nodejs_20
+  #     - nodejs_18
+  #   tests:
+  #     - node --version | grep $VERSION
