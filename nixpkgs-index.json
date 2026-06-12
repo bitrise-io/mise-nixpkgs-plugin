@@ -138,8 +138,8 @@
         }
       },
       "3.12.13": {
-        "nixpkgs_commit": "4a29d733e8a7d5b824c3d8c958a946a9867b3eb2",
-        "commit_timestamp": "2026-05-21T08:15:18+00:00",
+        "nixpkgs_commit": "8c91a71d13451abc40eb9dae8910f972f979852f",
+        "commit_timestamp": "2026-06-11T10:33:09+00:00",
         "store_paths": {
           "x86_64-linux": "/nix/store/lpgczl8hqnjlkicsphcylqfgds7dqc13-python3-3.12.13",
           "aarch64-darwin": "/nix/store/p1b85dd3syy1yx8q039m1c6v2x2l4w0a-python3-3.12.13"
@@ -194,8 +194,8 @@
         }
       },
       "3.11.15": {
-        "nixpkgs_commit": "4a29d733e8a7d5b824c3d8c958a946a9867b3eb2",
-        "commit_timestamp": "2026-05-21T08:15:18+00:00",
+        "nixpkgs_commit": "8c91a71d13451abc40eb9dae8910f972f979852f",
+        "commit_timestamp": "2026-06-11T10:33:09+00:00",
         "store_paths": {
           "x86_64-linux": "/nix/store/c6yb989sl77467xxwhylnkph1pqyi47p-python3-3.11.15",
           "aarch64-darwin": "/nix/store/3rnwb06acrgdggxkgpm7fnklbxqs5mw6-python3-3.11.15"
@@ -268,8 +268,8 @@
     },
     "ruby": {
       "3.4.9": {
-        "nixpkgs_commit": "4a29d733e8a7d5b824c3d8c958a946a9867b3eb2",
-        "commit_timestamp": "2026-05-21T08:15:18+00:00",
+        "nixpkgs_commit": "8c91a71d13451abc40eb9dae8910f972f979852f",
+        "commit_timestamp": "2026-06-11T10:33:09+00:00",
         "store_paths": {
           "x86_64-linux": "/nix/store/lkrkc1fxj9yr3ghsxp7nq30c2hxn9z0k-ruby-3.4.9",
           "aarch64-darwin": "/nix/store/638pidjdcs71b8lqzh59pm60p988256n-ruby-3.4.9"
@@ -340,8 +340,8 @@
         }
       },
       "3.3.10": {
-        "nixpkgs_commit": "4a29d733e8a7d5b824c3d8c958a946a9867b3eb2",
-        "commit_timestamp": "2026-05-21T08:15:18+00:00",
+        "nixpkgs_commit": "8c91a71d13451abc40eb9dae8910f972f979852f",
+        "commit_timestamp": "2026-06-11T10:33:09+00:00",
         "store_paths": {
           "x86_64-linux": "/nix/store/hv36arm6gdgxbhwg3j1m1d59isd04bd7-ruby-3.3.10",
           "aarch64-darwin": "/nix/store/f6d706zmg8bhrq64kfnq7znxdzirr0sc-ruby-3.3.10"
