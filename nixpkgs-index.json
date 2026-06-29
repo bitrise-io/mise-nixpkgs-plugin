@@ -2,11 +2,11 @@
   "pkgs": {
     "python": {
       "3.14.4": {
-        "nixpkgs_commit": "4a29d733e8a7d5b824c3d8c958a946a9867b3eb2",
-        "commit_timestamp": "2026-05-21T08:15:18+00:00",
+        "nixpkgs_commit": "962c07a057e65cb058781deb24397af1acd7db6a",
+        "commit_timestamp": "2026-06-27T07:54:16+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/zrx2128nk8aadnvhjc3n8za9hw08hqx9-python3-3.14.4",
-          "aarch64-darwin": "/nix/store/aqilljq85wr5srwy6a9qj0q6qzgb72kn-python3-3.14.4"
+          "x86_64-linux": "/nix/store/fk8c5cqd0npblqv1mcd8swhkcbng84qr-python3-3.14.4",
+          "aarch64-darwin": "/nix/store/bz7r3a1x3xby7ilac2ngzwr0szf3yzxc-python3-3.14.4"
         }
       },
       "3.14.3": {
@@ -42,11 +42,11 @@
         }
       },
       "3.13.13": {
-        "nixpkgs_commit": "4a29d733e8a7d5b824c3d8c958a946a9867b3eb2",
-        "commit_timestamp": "2026-05-21T08:15:18+00:00",
+        "nixpkgs_commit": "962c07a057e65cb058781deb24397af1acd7db6a",
+        "commit_timestamp": "2026-06-27T07:54:16+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/60m4rxhg2fldqaak400c0lry96ijrzqn-python3-3.13.13",
-          "aarch64-darwin": "/nix/store/ygxqin6ydzjfawywqpp5pal8wv6sf5bh-python3-3.13.13"
+          "x86_64-linux": "/nix/store/l9k0anq0z7zz81zcwy035jfwap9ga6rl-python3-3.13.13",
+          "aarch64-darwin": "/nix/store/mfkdmplffnbc0av8r6pknl796a6b1r2n-python3-3.13.13"
         }
       },
       "3.13.12": {
@@ -138,11 +138,11 @@
         }
       },
       "3.12.13": {
-        "nixpkgs_commit": "8c91a71d13451abc40eb9dae8910f972f979852f",
-        "commit_timestamp": "2026-06-11T10:33:09+00:00",
+        "nixpkgs_commit": "962c07a057e65cb058781deb24397af1acd7db6a",
+        "commit_timestamp": "2026-06-27T07:54:16+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/lpgczl8hqnjlkicsphcylqfgds7dqc13-python3-3.12.13",
-          "aarch64-darwin": "/nix/store/p1b85dd3syy1yx8q039m1c6v2x2l4w0a-python3-3.12.13"
+          "x86_64-linux": "/nix/store/d69yn2v7lzyh29rykj0ldnih67xps5s0-python3-3.12.13",
+          "aarch64-darwin": "/nix/store/65p6ipj712fb5igr9w1h5k5cb7bymj42-python3-3.12.13"
         }
       },
       "3.12.12": {
@@ -194,11 +194,11 @@
         }
       },
       "3.11.15": {
-        "nixpkgs_commit": "8c91a71d13451abc40eb9dae8910f972f979852f",
-        "commit_timestamp": "2026-06-11T10:33:09+00:00",
+        "nixpkgs_commit": "962c07a057e65cb058781deb24397af1acd7db6a",
+        "commit_timestamp": "2026-06-27T07:54:16+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/c6yb989sl77467xxwhylnkph1pqyi47p-python3-3.11.15",
-          "aarch64-darwin": "/nix/store/3rnwb06acrgdggxkgpm7fnklbxqs5mw6-python3-3.11.15"
+          "x86_64-linux": "/nix/store/2m2lgnmm5m63i5c9hr9najkpmi7af4jc-python3-3.11.15",
+          "aarch64-darwin": "/nix/store/3xqryhvq65kg2ahqjydcfwmhnbn9ny5i-python3-3.11.15"
         }
       },
       "3.11.14": {
@@ -268,11 +268,11 @@
     },
     "ruby": {
       "3.4.9": {
-        "nixpkgs_commit": "8c91a71d13451abc40eb9dae8910f972f979852f",
-        "commit_timestamp": "2026-06-11T10:33:09+00:00",
+        "nixpkgs_commit": "962c07a057e65cb058781deb24397af1acd7db6a",
+        "commit_timestamp": "2026-06-27T07:54:16+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/lkrkc1fxj9yr3ghsxp7nq30c2hxn9z0k-ruby-3.4.9",
-          "aarch64-darwin": "/nix/store/638pidjdcs71b8lqzh59pm60p988256n-ruby-3.4.9"
+          "x86_64-linux": "/nix/store/ks57gbw6jia5ssk0rd407ic2r8qvw9nn-ruby-3.4.9",
+          "aarch64-darwin": "/nix/store/xrzvqg9ncbkp90fx5jwhwrzasbfq1p8c-ruby-3.4.9"
         }
       },
       "3.4.8": {
@@ -340,11 +340,11 @@
         }
       },
       "3.3.10": {
-        "nixpkgs_commit": "8c91a71d13451abc40eb9dae8910f972f979852f",
-        "commit_timestamp": "2026-06-11T10:33:09+00:00",
+        "nixpkgs_commit": "962c07a057e65cb058781deb24397af1acd7db6a",
+        "commit_timestamp": "2026-06-27T07:54:16+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/hv36arm6gdgxbhwg3j1m1d59isd04bd7-ruby-3.3.10",
-          "aarch64-darwin": "/nix/store/f6d706zmg8bhrq64kfnq7znxdzirr0sc-ruby-3.3.10"
+          "x86_64-linux": "/nix/store/b15l29ml54whqs52xscv5yd4iiq25s0n-ruby-3.3.10",
+          "aarch64-darwin": "/nix/store/m2j1c0v7ilcxclfn19839y0l8r92839i-ruby-3.3.10"
         }
       },
       "3.3.9": {
