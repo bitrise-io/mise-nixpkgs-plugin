@@ -10,6 +10,7 @@ pkgs:
   ruby:
     nixpkgs_attributes:
       - ruby
+      - ruby_4_0
       - ruby_3_4
       - ruby_3_3
       - ruby_3_2
