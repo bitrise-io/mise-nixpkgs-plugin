@@ -283,6 +283,14 @@
       }
     },
     "ruby": {
+      "4.0.6": {
+        "nixpkgs_commit": "35d3407a3816f3b341d8cf1d60abaf2b7b8166ac",
+        "commit_timestamp": "2026-07-15T11:37:32+00:00",
+        "store_paths": {
+          "x86_64-linux": "/nix/store/4nif0ynipwscqij3kw3r99ys4r3k6m2h-ruby-4.0.6",
+          "aarch64-darwin": "/nix/store/x42gmia1yxhwpg5gmb73n3izr0nzm07j-ruby-4.0.6"
+        }
+      },
       "4.0.5": {
         "nixpkgs_commit": "b0c974d4aa5d8a032d276d32d62cb7492c06feca",
         "commit_timestamp": "2026-07-10T23:47:45+00:00",
