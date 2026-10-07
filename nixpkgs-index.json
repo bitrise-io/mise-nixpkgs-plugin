@@ -178,11 +178,11 @@
         }
       },
       "3.12.14": {
-        "nixpkgs_commit": "1f936b95ade84989d42511f1c34c49d26625ec14",
-        "commit_timestamp": "2026-10-01T08:07:57+00:00",
+        "nixpkgs_commit": "fcaa24d46f08c0b0de62550c2200f24782c8960e",
+        "commit_timestamp": "2026-10-01T16:11:54+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/9ka5lknbqqg6nzs3zp6qyncf1k3ayz97-python3-3.12.14",
-          "aarch64-darwin": "/nix/store/p1wfv7znig26m3hns4583cb9va3kzxkg-python3-3.12.14"
+          "x86_64-linux": "/nix/store/cs83igxbkbg7g4flzqhr0zm1drh1s0d6-python3-3.12.14",
+          "aarch64-darwin": "/nix/store/l65519rp9591nyr2vnmb164w0rzm4s5g-python3-3.12.14"
         }
       },
       "3.12.13": {
@@ -250,11 +250,11 @@
         }
       },
       "3.11.16": {
-        "nixpkgs_commit": "1f936b95ade84989d42511f1c34c49d26625ec14",
-        "commit_timestamp": "2026-10-01T08:07:57+00:00",
+        "nixpkgs_commit": "fcaa24d46f08c0b0de62550c2200f24782c8960e",
+        "commit_timestamp": "2026-10-01T16:11:54+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/yprcwha8bf8cag7kzbsiyfa180vm595w-python3-3.11.16",
-          "aarch64-darwin": "/nix/store/12hwj8pss204k29csg7npwcscskni3ar-python3-3.11.16"
+          "x86_64-linux": "/nix/store/lvipci3lyc3h3pnjkwdxp0rjx3rh92a9-python3-3.11.16",
+          "aarch64-darwin": "/nix/store/pxx6b12ipmh5w118ivi2ldgka9asmh51-python3-3.11.16"
         }
       },
       "3.11.15": {
