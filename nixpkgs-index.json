@@ -347,12 +347,20 @@
       }
     },
     "ruby": {
-      "4.0.7": {
-        "nixpkgs_commit": "348b60bdb647a6956ea6996aab535cc7a27878a2",
-        "commit_timestamp": "2026-10-19T13:29:15+00:00",
+      "4.0.9": {
+        "nixpkgs_commit": "674a2028661e550a97400c1cc992b9cca9a668a1",
+        "commit_timestamp": "2026-10-24T03:22:33+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/xi6y11yd566pf95scr0znh03j68433d8-ruby-4.0.7",
-          "aarch64-darwin": "/nix/store/inmijkrjmnil8pbbahbjh6x69819ybn1-ruby-4.0.7"
+          "x86_64-linux": "/nix/store/spl83aywni82vk48lkxkanqnq5sj58g8-ruby-4.0.9",
+          "aarch64-darwin": "/nix/store/0bp23r2m58bs7m0x4wznqixs2ijah6kb-ruby-4.0.9"
+        }
+      },
+      "4.0.7": {
+        "nixpkgs_commit": "3db7deb98763798bf2f0c043aa3ceca83e5a23b2",
+        "commit_timestamp": "2026-10-23T02:30:05+00:00",
+        "store_paths": {
+          "x86_64-linux": "/nix/store/5ipm15x0vw5ffsa80lbkx6296d0w44wk-ruby-4.0.7",
+          "aarch64-darwin": "/nix/store/nl6s94q6krp5qybzjl9r4l0bsk9lzvjn-ruby-4.0.7"
         }
       },
       "4.0.6": {
@@ -372,11 +380,11 @@
         }
       },
       "3.4.11": {
-        "nixpkgs_commit": "348b60bdb647a6956ea6996aab535cc7a27878a2",
-        "commit_timestamp": "2026-10-19T13:29:15+00:00",
+        "nixpkgs_commit": "3db7deb98763798bf2f0c043aa3ceca83e5a23b2",
+        "commit_timestamp": "2026-10-23T02:30:05+00:00",
         "store_paths": {
-          "x86_64-linux": "/nix/store/7b77drpxxyywsxq9hf4y0fc8c56pfivl-ruby-3.4.11",
-          "aarch64-darwin": "/nix/store/gic7hk5gg04swz51ayh2zp06425a7z5v-ruby-3.4.11"
+          "x86_64-linux": "/nix/store/jnjll1yxfq02bdcw5pjf9gl86wh8gfhq-ruby-3.4.11",
+          "aarch64-darwin": "/nix/store/mczy8ar5cxwvg0r1lwdcalg1limmclj9-ruby-3.4.11"
         }
       },
       "3.4.9": {
